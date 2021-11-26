@@ -29,8 +29,8 @@ Appsero\LaravelDatastore\DatastoreServiceProvider::class,
 ## Roadmap
 - Data read using query builder (available).
 - Data read using eloquent model (available).
-- Data insert (via query builder, using model soon).
-- Data update (soon).
+- Data insert (available).
+- Data update (Using query builder, model coming soon).
 - Data delete (available).
 - Cursor Paginate (soon).
 - Relations (soon).
