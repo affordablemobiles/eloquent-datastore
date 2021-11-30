@@ -51,7 +51,15 @@ abstract class Model extends BaseModel
      */
     public function getIdAttribute($value = null)
     {
-        return empty($value) ? $this->__key__ : $value;
+        return empty($value) ? ($this->__key__->path()[0]['name'] ?? $this->__key__->path()[0]['id'] ?? '') : $value;
+    }
+
+    /**
+     * If there is no id attribute then make the key as key property.
+     */
+    public function getKeyAttribute($value = null)
+    {
+        return empty($value) ? ($this->__key__->path()[0]['name'] ?? $this->__key__->path()[0]['id'] ?? '') : $value;
     }
 
     /**
