@@ -21,11 +21,7 @@ class Processor extends BaseProcessor
         $nextPageCursor = null;
 
         foreach ($results as $result) {
-            $entity = $result->get();
-            $entity['_key'] = $result->key()->path()[0];
-            $entity['_keys'] = $result->key()->path();
-            $entity['__key__'] = $result->key();
-            $entities[] = (object) $entity;
+            $entities[] = $this->processSingleResult($builder, $result);
             $nextPageCursor = $result->cursor();
         }
 
@@ -35,9 +31,10 @@ class Processor extends BaseProcessor
     /**
      * Process single entity result.
      */
-    public function processSingleResult($builder, $result)
+    public function processSingleResult($builder, $result): object
     {
         $entity = $result->get();
+        $entity['id'] = $entity['id'] ?? $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
         $entity['_key'] = $result->key()->path()[0];
         $entity['_keys'] = $result->key()->path();
         $entity['__key__'] = $result->key();
