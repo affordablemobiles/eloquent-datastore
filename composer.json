@@ -1,6 +1,6 @@
 {
     "name": "appsero/laravel-datastore",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "A package for using google datastore as a database driver.",
     "type": "package",
     "license": "MIT",

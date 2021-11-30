@@ -24,6 +24,10 @@ trait QueryBuilderHelper
 
         $result = $this->getClient()->lookup($key);
 
+        if (! $result || empty($result)) {
+            return null;
+        }
+
         $result = $this->processor->processSingleResult($this, $result);
 
         return empty($columns) ? $result : (object) Arr::only((array) $result, Arr::wrap($columns));
@@ -52,11 +56,17 @@ trait QueryBuilderHelper
             $query->keysOnly();
         }
 
-        if (count($this->wheres)) {
+        if (is_array($this->wheres) && count($this->wheres)) {
             foreach ($this->wheres as $filter) {
                 if ($filter['type'] == 'Basic') {
                     $query->filter($filter['column'], $filter['operator'], $filter['value']);
                 }
+            }
+        }
+
+        if (is_array($this->orders) && count($this->orders)) {
+            foreach ($this->orders as $order) {
+                $query->order($order['column'], $order['direction']);
             }
         }
 

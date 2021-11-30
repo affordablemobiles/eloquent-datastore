@@ -93,6 +93,7 @@ It will return a collection.
 - limit
 - take
 - skip
+- orderBy
 - get
 - simplePaginate
 - paginate (works same as simplePaginate)
