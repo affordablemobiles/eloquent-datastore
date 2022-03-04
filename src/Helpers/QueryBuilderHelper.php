@@ -18,10 +18,9 @@ trait QueryBuilderHelper
     /**
      * Retrieve a single entity using key.
      */
-    public function lookup($id, $columns = [])
+    public function lookup(Key $key, $columns = [])
     {
-        $key = $this->getClient()->key($this->from, $id);
-
+        dd($key);
         $result = $this->getClient()->lookup($key);
 
         if (! $result || empty($result)) {
@@ -30,7 +29,7 @@ trait QueryBuilderHelper
 
         $result = $this->processor->processSingleResult($this, $result);
 
-        return empty($columns) ? $result : (object) Arr::only((array) $result, Arr::wrap($columns));
+        return empty($columns) ? $result : Arr::only($result, Arr::wrap($columns));
     }
 
     /**
@@ -130,11 +129,42 @@ trait QueryBuilderHelper
             return true;
         }
 
-        $key = $key ? $this->getClient()->key($this->from, $key) : $this->getClient()->key($this->from);
+        if (isset($values['id'])) {
+            $key = $this->getClient()->key($this->from, $values['id'], [
+                'identifierType' => Key::TYPE_NAME
+            ]);
+            unset($values['id']);
+        } else {
+            throw new \LogicException('insert without key specified');
+        }
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
         return $this->getClient()->insert($entity);
+    }
+
+    /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param  array  $values
+     * @param  string|null  $sequence
+     * @return int
+     */
+    public function insertGetId(array $values, $sequence = null): string
+    {
+        if (empty($this->from)) {
+            throw new \LogicException('No kind/table specified');
+        }
+
+        if (isset($values['id'])) {
+            throw new \LogicException('insertGetId with key set');
+        }
+
+        $key = $this->getClient()->key($this->from);
+
+        $entity = $this->getClient()->entity($key, $values, []);
+
+        return dd(['insertId' => $this->getClient()->insert($entity)]);
     }
 
     /**
@@ -150,10 +180,16 @@ trait QueryBuilderHelper
             return true;
         }
 
-        $key = $key ? $this->getClient()->key($this->from, $key) : $this->getClient()->key($this->from);
+        if (isset($values['id'])) {
+            unset($values['id']);
+        }
 
-        $entity = $this->getClient()->entity($key, $values, $options);
+        if ($key instanceof Key) {
+            $entity = $this->getClient()->entity($key, $values, $options);
 
-        return $this->getClient()->upsert($entity);
+            return $this->getClient()->upsert($entity);
+        } else {
+            throw new \LogicException('invalid key');
+        }
     }
 }

@@ -1,7 +1,7 @@
 # Datastore Driver for Laravel
 
-![Latest Stable Version](https://poser.pugx.org/appsero/laravel-datastore/v)
-![License](https://poser.pugx.org/appsero/laravel-datastore/license)
+![Latest Stable Version](https://poser.pugx.org/a1comms/laravel-datastore/v)
+![License](https://poser.pugx.org/a1comms/laravel-datastore/license)
 
 A package for using google datastore as a database driver.
 
@@ -44,7 +44,7 @@ You need to add `datastore` connection in `config/database.php` file.
     ...
     'datastore' => [
         'driver' => 'datastore',
-        'key_file_path' => env('GOOGLE_APPLICATION_CREDENTIALS', 'gcloud-credentials.json'),
+        'transport' => env('DATASTORE_TRANSPORT', 'grpc'),
         'prefix' => env('DATASTORE_PREFIX', null),
     ],
     ...

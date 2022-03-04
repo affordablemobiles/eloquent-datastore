@@ -43,10 +43,11 @@ class Builder extends EloquentBuilder
      */
     public function find($id, $columns = [])
     {
-        /*if (is_array($id) || $id instanceof Arrayable) {
-            return $this->findMany($id, $columns);
-        }*/
-
-        return $this->query->find($id, $columns);
+        return $this->hydrate([
+            $this->query->find(
+                $this->model->getKey($id),
+                $columns
+            )
+        ])->first();
     }
 }

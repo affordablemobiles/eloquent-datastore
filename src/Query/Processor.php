@@ -31,7 +31,7 @@ class Processor extends BaseProcessor
     /**
      * Process single entity result.
      */
-    public function processSingleResult($builder, $result): object
+    public function processSingleResult($builder, $result): array
     {
         $entity = $result->get();
         $entity['id'] = $entity['id'] ?? $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
@@ -39,6 +39,6 @@ class Processor extends BaseProcessor
         $entity['_keys'] = $result->key()->path();
         $entity['__key__'] = $result->key();
 
-        return (object) $entity;
+        return $entity;
     }
 }
