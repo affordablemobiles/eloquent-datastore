@@ -6,7 +6,7 @@ use Appsero\LaravelDatastore\Query\Builder;
 use Appsero\LaravelDatastore\Query\Grammar;
 use Appsero\LaravelDatastore\Query\Processor;
 use Appsero\LaravelDatastore\Query\RawExpression;
-use Google\Cloud\Datastore\DatastoreClient;
+use Appsero\LaravelDatastore\Client\DatastoreClient;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Traits\ForwardsCalls;
 

@@ -20,7 +20,6 @@ trait QueryBuilderHelper
      */
     public function lookup(Key $key, $columns = [])
     {
-        dd($key);
         $result = $this->getClient()->lookup($key);
 
         if (! $result || empty($result)) {
@@ -140,7 +139,7 @@ trait QueryBuilderHelper
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
-        return $this->getClient()->insert($entity);
+        return $this->getClient()->insert($entity)->pathEndIdentifier();
     }
 
     /**
@@ -164,7 +163,7 @@ trait QueryBuilderHelper
 
         $entity = $this->getClient()->entity($key, $values, []);
 
-        return dd(['insertId' => $this->getClient()->insert($entity)]);
+        return $this->getClient()->insert($entity)->pathEndIdentifier();
     }
 
     /**
@@ -187,7 +186,7 @@ trait QueryBuilderHelper
         if ($key instanceof Key) {
             $entity = $this->getClient()->entity($key, $values, $options);
 
-            return $this->getClient()->upsert($entity);
+            return $this->getClient()->upsert($entity)->pathEndIdentifier();
         } else {
             throw new \LogicException('invalid key');
         }
