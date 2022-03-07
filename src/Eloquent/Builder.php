@@ -43,11 +43,17 @@ class Builder extends EloquentBuilder
      */
     public function find($id, $columns = [])
     {
+        $result = $this->query->find(
+            $this->model->getKey($id),
+            $columns
+        );
+
+        if (is_null($result)) {
+            return null;
+        }
+
         return $this->hydrate([
-            $this->query->find(
-                $this->model->getKey($id),
-                $columns
-            )
+            $result
         ])->first();
     }
 }

@@ -20,6 +20,10 @@ trait QueryBuilderHelper
      */
     public function lookup(Key $key, $columns = [])
     {
+        if (in_array('*', $columns)) {
+            $columns = [];
+        }
+
         $result = $this->getClient()->lookup($key);
 
         if (! $result || empty($result)) {

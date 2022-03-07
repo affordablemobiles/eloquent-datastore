@@ -30,7 +30,7 @@ abstract class Model extends BaseModel
      *
      * @var string
      */
-    protected $keyType = 'string';
+    protected $keyType = 'int';
 
     /**
      * Indicates if the IDs are auto-incrementing.
