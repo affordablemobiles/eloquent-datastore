@@ -65,7 +65,7 @@ class DatastoreClient extends BaseDatastoreClient
      * @param EntityInterface[] $entities the entities to be inserted
      * @param array             $options  [optional] Configuration options
      *
-     * @return []Key
+     * @return Key[]
      */
     public function insertBatch(array $entities, array $options = [])
     {
@@ -156,7 +156,7 @@ class DatastoreClient extends BaseDatastoreClient
      *           lookup or query. **Defaults to** `false`.
      * }
      *
-     * @return []Key
+     * @return Key[]
      */
     public function updateBatch(array $entities, array $options = [])
     {
@@ -239,7 +239,7 @@ class DatastoreClient extends BaseDatastoreClient
      * @param EntityInterface[] $entities the entities to be upserted
      * @param array             $options  [optional] Configuration Options
      *
-     * @return []Key array of keys updated
+     * @return Key[] array of keys updated
      */
     public function upsertBatch(array $entities, array $options = [])
     {
