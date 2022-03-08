@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore\Client;
 
 use DomainException;
@@ -10,7 +12,7 @@ use Google\Cloud\Datastore\Key;
 class DatastoreClient extends BaseDatastoreClient
 {
     /**
-     * Insert an entity
+     * Insert an entity.
      *
      * An entity with incomplete keys will be allocated an ID prior to insertion.
      *
@@ -27,10 +29,12 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface $entity The entity to be inserted.
-     * @param array $options [optional] Configuration options.
+     * @param EntityInterface $entity  the entity to be inserted
+     * @param array           $options [optional] Configuration options
+     *
+     * @throws DomainException if a conflict occurs, fail
+     *
      * @return Key
-     * @throws DomainException If a conflict occurs, fail.
      */
     public function insert(EntityInterface $entity, array $options = [])
     {
@@ -38,7 +42,7 @@ class DatastoreClient extends BaseDatastoreClient
     }
 
     /**
-     * Insert multiple entities
+     * Insert multiple entities.
      *
      * Any entity with incomplete keys will be allocated an ID prior to insertion.
      *
@@ -58,8 +62,9 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface[] $entities The entities to be inserted.
-     * @param array $options [optional] Configuration options.
+     * @param EntityInterface[] $entities the entities to be inserted
+     * @param array             $options  [optional] Configuration options
+     *
      * @return []Key
      */
     public function insertBatch(array $entities, array $options = [])
@@ -76,7 +81,7 @@ class DatastoreClient extends BaseDatastoreClient
     }
 
     /**
-     * Update an entity
+     * Update an entity.
      *
      * Please note that updating a record in Cloud Datastore will replace the
      * existing record. Adding, editing or removing a single property is only
@@ -94,11 +99,11 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface $entity The entity to be updated.
-     * @param array $options [optional] {
-     *     Configuration Options
+     * @param EntityInterface $entity  the entity to be updated
+     * @param array           $options [optional] {
+     *                                 Configuration Options
      *
-     *     @type bool $allowOverwrite Entities must be updated as an entire
+     *     @var bool $allowOverwrite Entities must be updated as an entire
      *           resource. Patch operations are not supported. Because entities
      *           can be created manually, or obtained by a lookup or query, it
      *           is possible to accidentally overwrite an existing record with a
@@ -107,8 +112,10 @@ class DatastoreClient extends BaseDatastoreClient
      *           record when the entity provided was not obtained through a
      *           lookup or query. **Defaults to** `false`.
      * }
+     *
+     * @throws DomainException if a conflict occurs, fail
+     *
      * @return Key
-     * @throws DomainException If a conflict occurs, fail.
      */
     public function update(EntityInterface $entity, array $options = [])
     {
@@ -116,7 +123,7 @@ class DatastoreClient extends BaseDatastoreClient
     }
 
     /**
-     * Update multiple entities
+     * Update multiple entities.
      *
      * Please note that updating a record in Cloud Datastore will replace the
      * existing record. Adding, editing or removing a single property is only
@@ -135,11 +142,11 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface[] $entities The entities to be updated.
-     * @param array $options [optional] {
-     *     Configuration Options
+     * @param EntityInterface[] $entities the entities to be updated
+     * @param array             $options  [optional] {
+     *                                    Configuration Options
      *
-     *     @type bool $allowOverwrite Entities must be updated as an entire
+     *     @var bool $allowOverwrite Entities must be updated as an entire
      *           resource. Patch operations are not supported. Because entities
      *           can be created manually, or obtained by a lookup or query, it
      *           is possible to accidentally overwrite an existing record with a
@@ -148,16 +155,18 @@ class DatastoreClient extends BaseDatastoreClient
      *           record when the entity provided was not obtained through a
      *           lookup or query. **Defaults to** `false`.
      * }
+     *
      * @return []Key
      */
     public function updateBatch(array $entities, array $options = [])
     {
         $result = parent::updateBatch($entities, $options);
+
         return $this->handleMutationResult($entities, $result);
     }
 
     /**
-     * Upsert an entity
+     * Upsert an entity.
      *
      * Upsert will create a record if one does not already exist, or overwrite
      * existing record if one already exists.
@@ -182,10 +191,12 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface $entity The entity to be upserted.
-     * @param array $options [optional] Configuration Options.
+     * @param EntityInterface $entity  the entity to be upserted
+     * @param array           $options [optional] Configuration Options
+     *
+     * @throws DomainException if a conflict occurs, fail
+     *
      * @return Key The entity key
-     * @throws DomainException If a conflict occurs, fail.
      */
     public function upsert(EntityInterface $entity, array $options = [])
     {
@@ -193,7 +204,7 @@ class DatastoreClient extends BaseDatastoreClient
     }
 
     /**
-     * Upsert multiple entities
+     * Upsert multiple entities.
      *
      * Upsert will create a record if one does not already exist, or overwrite
      * an existing record if one already exists.
@@ -225,16 +236,17 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @see https://cloud.google.com/datastore/docs/reference/rest/v1/projects/commit Commit API documentation
      *
-     * @param EntityInterface[] $entities The entities to be upserted.
-     * @param array $options [optional] Configuration Options.
+     * @param EntityInterface[] $entities the entities to be upserted
+     * @param array             $options  [optional] Configuration Options
+     *
      * @return []Key array of keys updated
      */
     public function upsertBatch(array $entities, array $options = [])
     {
         $mutations = [];
-        
+
         foreach ($entities as $entity) {
-            if ($entity->key()->state() === Key::STATE_INCOMPLETE) {
+            if (Key::STATE_INCOMPLETE === $entity->key()->state()) {
                 $mutations[] = $this->operation->mutation('insert', $entity, Entity::class);
             } else {
                 $mutations[] = $this->operation->mutation('upsert', $entity, Entity::class);
@@ -247,19 +259,19 @@ class DatastoreClient extends BaseDatastoreClient
     }
 
     /**
-     * Handle mutation results
+     * Handle mutation results.
      */
     protected function handleMutationResult(array $entities, array $result)
     {
         $keys = [];
 
         foreach ($entities as $index => $entity) {
-            if ($entity->key()->state() === Key::STATE_INCOMPLETE) {
+            if (Key::STATE_INCOMPLETE === $entity->key()->state()) {
                 $key = $result['mutationResults'][$index]['key'];
-                
+
                 $end = end($key['path']);
-                $id = $end['id'];
-                
+                $id  = $end['id'];
+
                 $entity->key()->setLastElementIdentifier($id);
             }
 

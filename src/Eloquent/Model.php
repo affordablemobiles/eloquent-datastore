@@ -1,17 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore\Eloquent;
 
+use Appsero\LaravelDatastore\Helpers\ModelHelper;
+use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
 use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
-use Appsero\LaravelDatastore\Helpers\ModelHelper;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
-use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
 {
     use ModelHelper;
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
 
     /**
      * Set default connection to datastore.
@@ -42,37 +51,30 @@ abstract class Model extends BaseModel
     protected $keyType = 'int';
 
     /**
-     * Indicates if the IDs are auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = true;
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getKey($id = false)
     {
-        
         if ($id) {
             return $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string)$id,
+                (string) $id,
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                 ]
             );
         }
-        
+
         if (!isset($this->__key__)) {
             return $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string)$this->id,
+                (string) $this->id,
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                 ]
             );
         }
+
         return $this->__key__;
     }
 
@@ -84,16 +86,15 @@ abstract class Model extends BaseModel
     public function getAttributes()
     {
         $attributes = $this->attributes;
-        unset($attributes['_key']);
-        unset($attributes['_keys']);
-        unset($attributes['__key__']);
+        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__']);
+
         return $attributes;
     }
 
     /**
      * Store DateTime as a DateTime object (instead of converting to string).
      *
-     * @param  mixed  $value
+     * @param mixed $value
      */
     public function fromDateTime($value): DateTimeInterface
     {
@@ -102,6 +103,8 @@ abstract class Model extends BaseModel
 
     /**
      * If there is no id attribute then make the key as id.
+     *
+     * @param null|mixed $value
      */
     public function getIdAttribute($value = null)
     {
@@ -110,6 +113,8 @@ abstract class Model extends BaseModel
 
     /**
      * If there is no id attribute then make the key as key property.
+     *
+     * @param null|mixed $value
      */
     public function getKeyAttribute($value = null)
     {
@@ -119,7 +124,6 @@ abstract class Model extends BaseModel
     /**
      * Save the model to the database.
      *
-     * @param  array  $options
      * @return bool
      */
     public function save(array $options = [])
@@ -129,7 +133,7 @@ abstract class Model extends BaseModel
         // If the "saving" event returns false we'll bail out of the save and return
         // false, indicating that the save failed. This provides a chance for any
         // listeners to cancel save operations if validations fail or whatever.
-        if ($this->fireModelEvent('saving') === false) {
+        if (false === $this->fireModelEvent('saving')) {
             return false;
         }
 
@@ -147,8 +151,8 @@ abstract class Model extends BaseModel
         else {
             $saved = $this->performInsert($query);
 
-            if (! $this->getConnectionName() &&
-                $connection = $query->getConnection()) {
+            if (!$this->getConnectionName()
+                && $connection = $query->getConnection()) {
                 $this->setConnection($connection->getName());
             }
         }
@@ -164,14 +168,29 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new Builder($query);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function newCollection(array $models = [])
+    {
+        return new Collection($models);
+    }
+
+    /**
      * Perform a model insert operation.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return bool
      */
     protected function performInsert(BaseBuilder $query)
     {
-        if ($this->fireModelEvent('creating') === false) {
+        if (false === $this->fireModelEvent('creating')) {
             return false;
         }
 
@@ -217,11 +236,9 @@ abstract class Model extends BaseModel
     /**
      * Insert the given attributes and set the ID on the model.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  array  $attributes
-     * @return void
+     * @param array $attributes
      */
-    protected function insertAndSetId(BaseBuilder $query, $attributes)
+    protected function insertAndSetId(BaseBuilder $query, $attributes): void
     {
         $id = $query->insertGetId($attributes, $keyName = $this->getKeyName(), $this->getQueryOptions());
 
@@ -231,7 +248,8 @@ abstract class Model extends BaseModel
     /**
      * Perform a model update operation.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
      * @return bool
      */
     protected function performUpsert(Builder $query)
@@ -239,7 +257,7 @@ abstract class Model extends BaseModel
         // If the updating event returns false, we will cancel the update operation so
         // developers can hook Validation systems into their models and cancel this
         // operation if the model does not pass validation. Otherwise, we update.
-        if ($this->fireModelEvent('updating') === false) {
+        if (false === $this->fireModelEvent('updating')) {
             return false;
         }
 
@@ -255,7 +273,7 @@ abstract class Model extends BaseModel
         // models are updated, giving them a chance to do any special processing.
         $dirty = $this->getDirty();
 
-        if (count($dirty) > 0) {
+        if (\count($dirty) > 0) {
             $query->upsert($this->getAttributes(), $this->getKey(), $this->getQueryOptions());
 
             $this->syncChanges();
@@ -277,28 +295,12 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
-     */
-    public function newEloquentBuilder($query)
-    {
-        return new Builder($query);
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
 
         return new QueryBuilder($connection);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function newCollection(array $models = [])
-    {
-        return new Collection($models);
     }
 }

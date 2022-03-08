@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore\Eloquent;
 
 use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class Builder extends EloquentBuilder
 {
     /**
      * Create a new Eloquent query builder instance.
-     *
-     * @param QueryBuilder $query
      */
     public function __construct(QueryBuilder $query)
     {
@@ -39,7 +38,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function find($id, $columns = [])
     {
@@ -48,12 +47,12 @@ class Builder extends EloquentBuilder
             $columns
         );
 
-        if (is_null($result)) {
+        if (null === $result) {
             return null;
         }
 
         return $this->hydrate([
-            $result
+            $result,
         ])->first();
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore\Query;
 
 use Appsero\LaravelDatastore\Helpers\QueryBuilderHelper;
@@ -23,13 +25,13 @@ class Builder extends BaseBuilder
     ];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct(ConnectionInterface $connection, Grammar $grammar = null, Processor $processor = null)
     {
         $this->connection = $connection;
-        //$this->expression = new Expression();
-        $this->grammar = $grammar ?: $connection->getQueryGrammar();
+        // $this->expression = new Expression();
+        $this->grammar   = $grammar ?: $connection->getQueryGrammar();
         $this->processor = $processor ?: $connection->getPostProcessor();
     }
 
@@ -46,10 +48,9 @@ class Builder extends BaseBuilder
      *
      * @param
      * @param string $direction
-     *
-     * @return Builder
+     * @param mixed  $column
      */
-    public function orderBy($column, $direction = 'ASCENDING'): Builder
+    public function orderBy($column, $direction = 'ASCENDING'): self
     {
         $this->orders[] = [
             'column'    => $column,
@@ -62,7 +63,7 @@ class Builder extends BaseBuilder
     /**
      * set keys only.
      */
-    public function keys(): Builder
+    public function keys(): self
     {
         $this->keysOnly = true;
 
@@ -73,16 +74,20 @@ class Builder extends BaseBuilder
      * Add an "order by" clause to the query.
      *
      * @param
-     *
-     * @return Builder
+     * @param mixed $column
      */
-    public function orderByDesc($column): Builder
+    public function orderByDesc($column): self
     {
         return $this->orderBy($column, 'DESCENDING');
     }
 
     /**
      * Enhanced pagination is not possible as count query is not possible in datastore.
+     *
+     * @param mixed      $perPage
+     * @param mixed      $columns
+     * @param mixed      $pageName
+     * @param null|mixed $page
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
     {
@@ -91,6 +96,11 @@ class Builder extends BaseBuilder
 
     /**
      * Cursor Paginate.
+     *
+     * @param mixed      $perPage
+     * @param mixed      $columns
+     * @param mixed      $cursorName
+     * @param null|mixed $cursor
      */
     public function cursorPaginate($perPage = 15, $columns = ['*'], $cursorName = 'cursor', $cursor = null)
     {

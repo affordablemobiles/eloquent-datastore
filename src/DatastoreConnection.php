@@ -1,25 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore;
 
+use Appsero\LaravelDatastore\Client\DatastoreClient;
 use Appsero\LaravelDatastore\Query\Builder;
 use Appsero\LaravelDatastore\Query\Grammar;
 use Appsero\LaravelDatastore\Query\Processor;
 use Appsero\LaravelDatastore\Query\RawExpression;
-use Appsero\LaravelDatastore\Client\DatastoreClient;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Traits\ForwardsCalls;
 
 class DatastoreConnection extends Connection
 {
     use ForwardsCalls;
-
-    /**
-     * Datastore Client.
-     *
-     * @var DatastoreClient
-     */
-    protected $client;
 
     /**
      * @var string
@@ -40,6 +35,13 @@ class DatastoreConnection extends Connection
      */
     public $postProcessor;
 
+    /**
+     * Datastore Client.
+     *
+     * @var DatastoreClient
+     */
+    protected $client;
+
     public function __construct($config)
     {
         parent::__construct(null);
@@ -54,13 +56,22 @@ class DatastoreConnection extends Connection
     }
 
     /**
+     * Call datastore client methods.
+     *
+     * @param $name
+     * @param $arguments
+     */
+    public function __call($name, $arguments): void
+    {
+        $this->forwardCallTo($this->client, $name, $arguments);
+    }
+
+    /**
      * Make datastore client.
      *
      * @param $config
-     *
-     * @return DatastoreConnection
      */
-    public function makeClient($config): DatastoreConnection
+    public function makeClient($config): self
     {
         $client = new DatastoreClient([
             'transport' => $config['transport'] ?? 'grpc',
@@ -71,8 +82,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Query builder.
-     *
-     * @return Builder
      */
     public function query(): Builder
     {
@@ -83,8 +92,6 @@ class DatastoreConnection extends Connection
      * Set the table.
      *
      * @param $table
-     *
-     * @return Builder
      */
     public function from($table): Builder
     {
@@ -101,8 +108,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Get default post processor.
-     *
-     * @return Processor
      */
     public function getDefaultPostProcessor(): Processor
     {
@@ -111,8 +116,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Get the datastore client.
-     *
-     * @return DatastoreClient
      */
     public function getClient(): DatastoreClient
     {
@@ -126,7 +129,7 @@ class DatastoreConnection extends Connection
      *
      * @return $this
      */
-    public function setClient($client): DatastoreConnection
+    public function setClient($client): self
     {
         $this->client = $client;
 
@@ -134,23 +137,10 @@ class DatastoreConnection extends Connection
     }
 
     /**
-     * Call datastore client methods.
-     *
-     * @param $name
-     * @param $arguments
-     */
-    public function __call($name, $arguments)
-    {
-        $this->forwardCallTo($this->client, $name, $arguments);
-    }
-
-    /**
      * Set the table/kind name.
      *
      * @param string $table
      * @param null   $as
-     *
-     * @return Builder
      */
     public function table($table, $as = null): Builder
     {
@@ -161,8 +151,6 @@ class DatastoreConnection extends Connection
      * Set the table/kind name.
      *
      * @param $kind
-     *
-     * @return Builder
      */
     public function kind($kind): Builder
     {
@@ -171,8 +159,6 @@ class DatastoreConnection extends Connection
 
     /**
      * @param mixed $value
-     *
-     * @return RawExpression
      */
     public function raw($value): RawExpression
     {
@@ -180,9 +166,9 @@ class DatastoreConnection extends Connection
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         $this->setClient(null);
     }

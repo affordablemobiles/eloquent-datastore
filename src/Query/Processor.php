@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Appsero\LaravelDatastore\Query;
 
 use Appsero\LaravelDatastore\Collection;
@@ -17,11 +19,11 @@ class Processor extends BaseProcessor
      */
     public function processResults($builder, $results)
     {
-        $entities = [];
+        $entities       = [];
         $nextPageCursor = null;
 
         foreach ($results as $result) {
-            $entities[] = $this->processSingleResult($builder, $result);
+            $entities[]     = $this->processSingleResult($builder, $result);
             $nextPageCursor = $result->cursor();
         }
 
@@ -30,13 +32,16 @@ class Processor extends BaseProcessor
 
     /**
      * Process single entity result.
+     *
+     * @param mixed $builder
+     * @param mixed $result
      */
     public function processSingleResult($builder, $result): array
     {
         $entity = $result->get();
-        $entity['id'] = $entity['id'] ?? $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
-        $entity['_key'] = $result->key()->path()[0];
-        $entity['_keys'] = $result->key()->path();
+        $entity['id'] ??= $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
+        $entity['_key']    = $result->key()->path()[0];
+        $entity['_keys']   = $result->key()->path();
         $entity['__key__'] = $result->key();
 
         return $entity;
