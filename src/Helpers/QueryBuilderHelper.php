@@ -122,7 +122,7 @@ trait QueryBuilderHelper
     /**
      * @inheritdoc
      */
-    public function insert(array $values, $key = '', $options = [])
+    public function insert(array $values, $options = [])
     {
         if (empty($this->from)) {
             throw new \LogicException('No kind/table specified');
@@ -153,7 +153,7 @@ trait QueryBuilderHelper
      * @param  string|null  $sequence
      * @return int
      */
-    public function insertGetId(array $values, $sequence = null): string
+    public function insertGetId(array $values, $sequence = null, $options = []): string
     {
         if (empty($this->from)) {
             throw new \LogicException('No kind/table specified');
@@ -165,7 +165,7 @@ trait QueryBuilderHelper
 
         $key = $this->getClient()->key($this->from);
 
-        $entity = $this->getClient()->entity($key, $values, []);
+        $entity = $this->getClient()->entity($key, $values, $options);
 
         return $this->getClient()->insert($entity)->pathEndIdentifier();
     }

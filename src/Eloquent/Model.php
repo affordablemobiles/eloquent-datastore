@@ -2,8 +2,10 @@
 
 namespace Appsero\LaravelDatastore\Eloquent;
 
+use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
 use Appsero\LaravelDatastore\Helpers\ModelHelper;
+use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
@@ -19,7 +21,14 @@ abstract class Model extends BaseModel
     protected $connection = 'datastore';
 
     /**
-     * The primary key for the datastore should be __key__.
+     * A list of attributes to exclude from the default indexing strategy.
+     *
+     * @var string
+     */
+    protected $excludeFromIndexes = [];
+
+    /**
+     * The primary key for the datastore should be "id".
      *
      * @var string
      */
@@ -82,12 +91,11 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Convert a DateTime to a storable string.
+     * Store DateTime as a DateTime object (instead of converting to string).
      *
      * @param  mixed  $value
-     * @return string|null
      */
-    public function fromDateTime($value)
+    public function fromDateTime($value): DateTimeInterface
     {
         return empty($value) ? $value : $this->asDateTime($value);
     }
@@ -156,6 +164,71 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Perform a model insert operation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return bool
+     */
+    protected function performInsert(BaseBuilder $query)
+    {
+        if ($this->fireModelEvent('creating') === false) {
+            return false;
+        }
+
+        // First we'll need to create a fresh query instance and touch the creation and
+        // update timestamps on this model, which are maintained by us for developer
+        // convenience. After, we will just continue saving these model instances.
+        if ($this->usesTimestamps()) {
+            $this->updateTimestamps();
+        }
+
+        // If the model has an incrementing key, we can use the "insertGetId" method on
+        // the query builder, which will give us back the final inserted ID for this
+        // table from the database. Not all tables have to be incrementing though.
+        $attributes = $this->getAttributes();
+
+        if ($this->getIncrementing()) {
+            $this->insertAndSetId($query, $attributes);
+        }
+
+        // If the table isn't incrementing we'll simply insert these attributes as they
+        // are. These attribute arrays must contain an "id" column previously placed
+        // there by the developer as the manually determined key for these models.
+        else {
+            if (empty($attributes)) {
+                return true;
+            }
+
+            $query->insert($attributes, $this->getQueryOptions());
+        }
+
+        // We will go ahead and set the exists property to true, so that it is set when
+        // the created event is fired, just in case the developer tries to update it
+        // during the event. This will allow them to do so and run an update here.
+        $this->exists = true;
+
+        $this->wasRecentlyCreated = true;
+
+        $this->fireModelEvent('created', false);
+
+        return true;
+    }
+
+    /**
+     * Insert the given attributes and set the ID on the model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  array  $attributes
+     * @return void
+     */
+    protected function insertAndSetId(BaseBuilder $query, $attributes)
+    {
+        $id = $query->insertGetId($attributes, $keyName = $this->getKeyName(), $this->getQueryOptions());
+
+        $this->setAttribute($keyName, $id);
+    }
+
+    /**
      * Perform a model update operation.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -183,7 +256,7 @@ abstract class Model extends BaseModel
         $dirty = $this->getDirty();
 
         if (count($dirty) > 0) {
-            $query->upsert($this->getAttributes(), $this->getKey());
+            $query->upsert($this->getAttributes(), $this->getKey(), $this->getQueryOptions());
 
             $this->syncChanges();
 
@@ -191,6 +264,16 @@ abstract class Model extends BaseModel
         }
 
         return true;
+    }
+
+    /**
+     * Get options for the DatastoreClient.
+     */
+    protected function getQueryOptions(): array
+    {
+        return [
+            'excludeFromIndexes' => $this->excludeFromIndexes,
+        ];
     }
 
     /**
