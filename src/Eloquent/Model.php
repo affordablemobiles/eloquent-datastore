@@ -65,28 +65,26 @@ abstract class Model extends BaseModel
             );
         }
 
-        if (!isset($this->__key__)) {
+        if (!isset($this->attributes['__key__'])) {
             return $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string) $this->id,
+                (string) $this->attributes['id'],
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                 ]
             );
         }
 
-        return $this->__key__;
+        return $this->attributes['__key__'];
     }
 
     /**
      * Get all of the current attributes on the model.
-     *
-     * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $this->mergeAttributesFromCachedCasts();
-        
+
         $attributes = $this->attributes;
         unset($attributes['_key'], $attributes['_keys'], $attributes['__key__']);
 

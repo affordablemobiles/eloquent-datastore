@@ -55,4 +55,9 @@ class Builder extends EloquentBuilder
             $result,
         ])->first();
     }
+
+    public function upsert(array $values, $key = '', $options = [])
+    {
+        return $this->query->upsert($values, $key, $options);
+    }
 }
