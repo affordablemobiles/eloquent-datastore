@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Pagination;
+namespace A1comms\EloquentDatastore\Pagination;
 
 use Illuminate\Contracts\Support\Arrayable;
 use UnexpectedValueException;

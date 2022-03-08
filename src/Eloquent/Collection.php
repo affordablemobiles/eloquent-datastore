@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Eloquent;
+namespace A1comms\EloquentDatastore\Eloquent;
 
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
 use LogicException;

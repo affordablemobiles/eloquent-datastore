@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Helpers;
+namespace A1comms\EloquentDatastore\Helpers;
 
 use LogicException;
 

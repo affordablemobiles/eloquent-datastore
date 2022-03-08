@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Eloquent;
+namespace A1comms\EloquentDatastore\Eloquent;
 
-use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
+use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class Builder extends EloquentBuilder

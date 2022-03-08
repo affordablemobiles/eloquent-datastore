@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Eloquent;
+namespace A1comms\EloquentDatastore\Eloquent;
 
-use Appsero\LaravelDatastore\Helpers\ModelHelper;
-use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
+use A1comms\EloquentDatastore\Helpers\ModelHelper;
+use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;

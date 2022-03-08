@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Query;
+namespace A1comms\EloquentDatastore\Query;
 
-use Appsero\LaravelDatastore\Collection;
+use A1comms\EloquentDatastore\Collection;
 use Illuminate\Database\Query\Processors\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor

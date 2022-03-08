@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore;
+namespace A1comms\EloquentDatastore;
 
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;

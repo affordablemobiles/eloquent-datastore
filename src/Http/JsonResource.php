@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Http;
+namespace A1comms\EloquentDatastore\Http;
 
 use Illuminate\Http\Resources\Json\JsonResource as BaseJsonResource;
 

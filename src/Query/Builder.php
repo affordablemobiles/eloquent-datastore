@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Query;
+namespace A1comms\EloquentDatastore\Query;
 
-use Appsero\LaravelDatastore\Helpers\QueryBuilderHelper;
+use A1comms\EloquentDatastore\Helpers\QueryBuilderHelper;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 

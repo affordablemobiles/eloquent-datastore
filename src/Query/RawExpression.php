@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Query;
+namespace A1comms\EloquentDatastore\Query;
 
 class RawExpression
 {

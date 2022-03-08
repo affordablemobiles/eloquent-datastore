@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore;
+namespace A1comms\EloquentDatastore;
 
-use Appsero\LaravelDatastore\Client\DatastoreClient;
-use Appsero\LaravelDatastore\Query\Builder;
-use Appsero\LaravelDatastore\Query\Grammar;
-use Appsero\LaravelDatastore\Query\Processor;
-use Appsero\LaravelDatastore\Query\RawExpression;
+use A1comms\EloquentDatastore\Client\DatastoreClient;
+use A1comms\EloquentDatastore\Query\Builder;
+use A1comms\EloquentDatastore\Query\Grammar;
+use A1comms\EloquentDatastore\Query\Processor;
+use A1comms\EloquentDatastore\Query\RawExpression;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Traits\ForwardsCalls;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Appsero\LaravelDatastore\Client;
+namespace A1comms\EloquentDatastore\Client;
 
 use DomainException;
 use Google\Cloud\Datastore\DatastoreClient as BaseDatastoreClient;
