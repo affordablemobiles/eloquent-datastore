@@ -36,7 +36,7 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 - [ ] Delete data
 - [x] Auto-generated primary key
 - [ ] Cursor Paginate.
-- [ ] Ancestor key relations (soon).
+- [ ] Ancestor key relations.
 
 ## Usage
 
