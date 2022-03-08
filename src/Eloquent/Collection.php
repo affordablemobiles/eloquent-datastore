@@ -1,6 +1,8 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Eloquent;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore\Eloquent;
 
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
 use LogicException;
@@ -18,9 +20,9 @@ class Collection extends BaseCollection
             throw new LogicException('Unable to create query for empty collection.');
         }
 
-        $class = get_class($model);
+        $class = $model::class;
 
-        $this->each(function ($item) use ($class) {
+        $this->each(function ($item) use ($class): void {
             if (!$item instanceof $class) {
                 throw new LogicException('Unable to create query for collection with mixed types.');
             }

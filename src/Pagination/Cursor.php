@@ -1,6 +1,8 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Pagination;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore\Pagination;
 
 use Illuminate\Contracts\Support\Arrayable;
 use UnexpectedValueException;
@@ -24,27 +26,24 @@ class Cursor implements Arrayable
     /**
      * Create a new cursor instance.
      *
-     * @param array $parameters
-     * @param bool  $pointsToNextItems
+     * @param bool $pointsToNextItems
      */
     public function __construct(array $parameters, $pointsToNextItems = true)
     {
-        $this->parameters = $parameters;
+        $this->parameters        = $parameters;
         $this->pointsToNextItems = $pointsToNextItems;
     }
 
     /**
      * Get the given parameter from the cursor.
      *
-     * @param string $parameterName
-     *
      * @throws \UnexpectedValueException
      *
-     * @return string|null
+     * @return null|string
      */
     public function parameter(string $parameterName)
     {
-        if (!array_key_exists($parameterName, $this->parameters)) {
+        if (!\array_key_exists($parameterName, $this->parameters)) {
             throw new UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
         }
 
@@ -54,15 +53,11 @@ class Cursor implements Arrayable
     /**
      * Get the given parameters from the cursor.
      *
-     * @param array $parameterNames
-     *
      * @return array
      */
     public function parameters(array $parameterNames)
     {
-        return collect($parameterNames)->map(function ($parameterName) {
-            return $this->parameter($parameterName);
-        })->toArray();
+        return collect($parameterNames)->map(fn ($parameterName) => $this->parameter($parameterName))->toArray();
     }
 
     /**
@@ -110,19 +105,19 @@ class Cursor implements Arrayable
     /**
      * Get a cursor instance from the encoded string representation.
      *
-     * @param string|null $encodedString
+     * @param null|string $encodedString
      *
-     * @return static|null
+     * @return null|static
      */
     public static function fromEncoded($encodedString)
     {
-        if (is_null($encodedString) || !is_string($encodedString)) {
+        if (null === $encodedString || !\is_string($encodedString)) {
             return null;
         }
 
-        $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString)), true);
+        $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString), true), true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (JSON_ERROR_NONE !== json_last_error()) {
             return null;
         }
 

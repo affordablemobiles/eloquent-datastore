@@ -1,6 +1,8 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Helpers;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore\Helpers;
 
 use LogicException;
 
@@ -8,7 +10,7 @@ trait ModelHelper
 {
     public function delete(): bool
     {
-        if (is_null($this->getKeyName())) {
+        if (null === $this->getKeyName()) {
             throw new LogicException('No primary key defined on model.');
         }
 
@@ -16,7 +18,7 @@ trait ModelHelper
             return false;
         }
 
-        if ($this->fireModelEvent('deleting') === false) {
+        if (false === $this->fireModelEvent('deleting')) {
             return false;
         }
 

@@ -1,6 +1,8 @@
 <?php
 
-namespace Appsero\LaravelDatastore;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore;
 
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ class Collection extends BaseCollection
     public function hasNextItems()
     {
         return true;
-        //return is_array($this->lastEvaluatedKey);
+        // return is_array($this->lastEvaluatedKey);
     }
 
     /**
@@ -24,7 +26,7 @@ class Collection extends BaseCollection
      */
     public function delete()
     {
-        $this->each(function ($item) {
+        $this->each(function ($item): void {
             if (empty($item->_KEY_)) {
                 throw new LogicException('Unable to create query for collection with mixed types.');
             }

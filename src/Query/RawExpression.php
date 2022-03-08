@@ -1,6 +1,8 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Query;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore\Query;
 
 class RawExpression
 {

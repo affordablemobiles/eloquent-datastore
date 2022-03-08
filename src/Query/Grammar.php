@@ -1,12 +1,14 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Query;
+declare(strict_types=1);
+
+namespace A1comms\EloquentDatastore\Query;
 
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 
 class Grammar extends BaseGrammar
 {
-    /**
+    /*
      * All the available clause operators.
      *
      * @var string[]

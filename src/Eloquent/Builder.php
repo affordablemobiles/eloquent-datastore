@@ -1,17 +1,16 @@
 <?php
 
-namespace Appsero\LaravelDatastore\Eloquent;
+declare(strict_types=1);
 
-use Appsero\LaravelDatastore\Query\Builder as QueryBuilder;
-use Illuminate\Contracts\Support\Arrayable;
+namespace A1comms\EloquentDatastore\Eloquent;
+
+use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class Builder extends EloquentBuilder
 {
     /**
      * Create a new Eloquent query builder instance.
-     *
-     * @param QueryBuilder $query
      */
     public function __construct(QueryBuilder $query)
     {
@@ -39,14 +38,21 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function find($id, $columns = [])
     {
-        /*if (is_array($id) || $id instanceof Arrayable) {
-            return $this->findMany($id, $columns);
-        }*/
+        $result = $this->query->find(
+            $this->model->getKey($id),
+            $columns
+        );
 
-        return $this->query->find($id, $columns);
+        if (null === $result) {
+            return null;
+        }
+
+        return $this->hydrate([
+            $result,
+        ])->first();
     }
 }
