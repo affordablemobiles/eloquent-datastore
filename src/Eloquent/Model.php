@@ -85,6 +85,8 @@ abstract class Model extends BaseModel
      */
     public function getAttributes()
     {
+        $this->mergeAttributesFromCachedCasts();
+        
         $attributes = $this->attributes;
         unset($attributes['_key'], $attributes['_keys'], $attributes['__key__']);
 
@@ -128,6 +130,8 @@ abstract class Model extends BaseModel
      */
     public function save(array $options = [])
     {
+        $this->mergeAttributesFromCachedCasts();
+
         $query = $this->newModelQuery();
 
         // If the "saving" event returns false we'll bail out of the save and return
@@ -204,7 +208,7 @@ abstract class Model extends BaseModel
         // If the model has an incrementing key, we can use the "insertGetId" method on
         // the query builder, which will give us back the final inserted ID for this
         // table from the database. Not all tables have to be incrementing though.
-        $attributes = $this->getAttributes();
+        $attributes = $this->getAttributesForInsert();
 
         if ($this->getIncrementing()) {
             $this->insertAndSetId($query, $attributes);
