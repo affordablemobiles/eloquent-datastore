@@ -1,4 +1,4 @@
-# Datastore Driver for Laravel
+# Laravel Eloquent for Google Datastore
 
 ![Latest Stable Version](https://poser.pugx.org/a1comms/eloquent-datastore/v)
 ![License](https://poser.pugx.org/a1comms/eloquent-datastore/license)
@@ -33,8 +33,8 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 - [x] Read data using eloquent model.
 - [x] Insert data using eloquent model.
 - [x] Update data using eloquent model.
-- [ ] Delete data
-- [x] Auto-generated primary key
+- [ ] Delete data.
+- [x] Auto-generated primary key.
 - [ ] Cursor Paginate.
 - [ ] Ancestor key relations.
 
@@ -107,7 +107,10 @@ It will return a collection.
 
 ## Contribution Guide
 
-This driver is still not stable. You can contribute by reporting bugs, fixing bugs, reviewing pull requests and more ways.
+**This driver is still not stable.**
+
+You can contribute by reporting bugs, fixing bugs, submitting and reviewing pull requests.
+
 Go to **issues** section, and you can start working on an issue immediately.
 
 ## License
