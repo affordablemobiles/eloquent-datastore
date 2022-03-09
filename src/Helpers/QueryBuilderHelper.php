@@ -64,6 +64,13 @@ trait QueryBuilderHelper
             $query->keysOnly();
         }
 
+        if (true === $this->distinct) {
+            throw new \LogicException('must specify columns for distinct query');
+        }
+        if (\is_array($this->distinct)) {
+            $query->distinctOn($this->distinct);
+        }
+
         if (\is_array($this->wheres) && \count($this->wheres)) {
             foreach ($this->wheres as $filter) {
                 if ('Basic' === $filter['type']) {
