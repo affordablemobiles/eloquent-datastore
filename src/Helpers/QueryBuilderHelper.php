@@ -101,6 +101,30 @@ trait QueryBuilderHelper
     }
 
     /**
+     * Get a collection instance containing the values of a given column.
+     *
+     * @param string      $column
+     * @param null|string $key
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function pluck($column, $key = null)
+    {
+        // First, we will need to select the results of the query accounting for the
+        // given columns / key. Once we have the results, we will be able to take
+        // the results and get the exact data that was requested for the query.
+        $queryResult = $this->get([$column]);
+
+        if (empty($queryResult)) {
+            return collect();
+        }
+
+        return \is_array($queryResult[0])
+                    ? $this->pluckFromArrayColumn($queryResult, $column, $key)
+                    : $this->pluckFromObjectColumn($queryResult, $column, $key);
+    }
+
+    /**
      * Key Only Query.
      */
     public function getKeys()
