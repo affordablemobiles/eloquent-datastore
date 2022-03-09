@@ -13,7 +13,7 @@ trait QueryBuilderHelper
     /**
      * {@inheritdoc}
      */
-    public function find($id, $columns = [])
+    public function find($id, $columns = ['*'])
     {
         return $this->lookup($id, $columns);
     }
@@ -23,21 +23,28 @@ trait QueryBuilderHelper
      *
      * @param mixed $columns
      */
-    public function lookup(Key $key, $columns = [])
+    public function lookup(Key $key, $columns = ['*'])
     {
-        if (\in_array('*', $columns, true)) {
-            $columns = [];
-        }
+        return $this->onceWithColumns(Arr::wrap($columns), function () {
+            if (!empty($columns)) {
+                $this->addSelect($columns);
+            }
 
-        $result = $this->getClient()->lookup($key);
+            // Drop all columns if * is present.
+            if (\in_array('*', $this->columns, true)) {
+                $this->columns = [];
+            }
 
-        if (!$result || empty($result)) {
-            return null;
-        }
+            $result = $this->getClient()->lookup($key);
 
-        $result = $this->processor->processSingleResult($this, $result);
+            if (!$result || empty($result)) {
+                return null;
+            }
 
-        return empty($columns) ? $result : Arr::only($result, Arr::wrap($columns));
+            $result = $this->processor->processSingleResult($this, $result);
+
+            return empty($this->columns) ? $result : Arr::only($result, Arr::wrap($this->columns));
+        });
     }
 
     /**
@@ -45,50 +52,52 @@ trait QueryBuilderHelper
      */
     public function get($columns = ['*'])
     {
-        if (!empty($columns)) {
-            $this->addSelect($columns);
-        }
+        return $this->onceWithColumns(Arr::wrap($columns), function () {
+            if (!empty($columns)) {
+                $this->addSelect($columns);
+            }
 
-        // Drop all columns if * is present.
-        if (\in_array('*', $this->columns, true)) {
-            $this->columns = [];
-        }
+            // Drop all columns if * is present.
+            if (\in_array('*', $this->columns, true)) {
+                $this->columns = [];
+            }
 
-        $query = $this->getClient()->query()->kind($this->from)
-            ->projection($this->columns)
-            ->offset($this->offset)
-            ->limit($this->limit)
-        ;
+            $query = $this->getClient()->query()->kind($this->from)
+                ->projection($this->columns)
+                ->offset($this->offset)
+                ->limit($this->limit)
+            ;
 
-        if ($this->keysOnly) {
-            $query->keysOnly();
-        }
+            if ($this->keysOnly) {
+                $query->keysOnly();
+            }
 
-        if (true === $this->distinct) {
-            throw new \LogicException('must specify columns for distinct query');
-        }
-        if (\is_array($this->distinct)) {
-            $query->distinctOn($this->distinct);
-        }
+            if (true === $this->distinct) {
+                throw new \LogicException('must specify columns for distinct query');
+            }
+            if (\is_array($this->distinct)) {
+                $query->distinctOn($this->distinct);
+            }
 
-        if (\is_array($this->wheres) && \count($this->wheres)) {
-            foreach ($this->wheres as $filter) {
-                if ('Basic' === $filter['type']) {
-                    $query->filter($filter['column'], $filter['operator'], $filter['value']);
+            if (\is_array($this->wheres) && \count($this->wheres)) {
+                foreach ($this->wheres as $filter) {
+                    if ('Basic' === $filter['type']) {
+                        $query->filter($filter['column'], $filter['operator'], $filter['value']);
+                    }
                 }
             }
-        }
 
-        if (\is_array($this->orders) && \count($this->orders)) {
-            foreach ($this->orders as $order) {
-                $direction = 'DESC' === strtoupper($order['direction']) ? Query::ORDER_DESCENDING : Query::ORDER_ASCENDING;
-                $query->order($order['column'], $direction);
+            if (\is_array($this->orders) && \count($this->orders)) {
+                foreach ($this->orders as $order) {
+                    $direction = 'DESC' === strtoupper($order['direction']) ? Query::ORDER_DESCENDING : Query::ORDER_ASCENDING;
+                    $query->order($order['column'], $direction);
+                }
             }
-        }
 
-        $results = $this->getClient()->runQuery($query);
+            $results = $this->getClient()->runQuery($query);
 
-        return $this->processor->processResults($this, $results);
+            return $this->processor->processResults($this, $results);
+        });
     }
 
     /**
