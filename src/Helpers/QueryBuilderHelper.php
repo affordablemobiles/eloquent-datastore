@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace A1comms\EloquentDatastore\Helpers;
 
 use Google\Cloud\Datastore\Key;
+use Google\Cloud\Datastore\Query\Query;
 use Illuminate\Support\Arr;
 
 trait QueryBuilderHelper
@@ -73,7 +74,8 @@ trait QueryBuilderHelper
 
         if (\is_array($this->orders) && \count($this->orders)) {
             foreach ($this->orders as $order) {
-                $query->order($order['column'], $order['direction']);
+                $direction = 'DESC' === strtoupper($order['direction']) ? Query::ORDER_DESCENDING : Query::ORDER_ASCENDING;
+                $query->order($order['column'], $direction);
             }
         }
 
