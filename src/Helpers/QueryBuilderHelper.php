@@ -89,7 +89,7 @@ trait QueryBuilderHelper
      */
     public function getKeys()
     {
-        return $this->keys()->get()->pluck('_keys');
+        return $this->keys()->get()->pluck('__key__');
     }
 
     /**
@@ -97,7 +97,7 @@ trait QueryBuilderHelper
      */
     public function keysOnly()
     {
-        return $this->getKeys();
+        return $this->keys();
     }
 
     /**

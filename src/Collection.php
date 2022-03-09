@@ -27,11 +27,11 @@ class Collection extends BaseCollection
     public function delete()
     {
         $this->each(function ($item): void {
-            if (empty($item->_KEY_)) {
+            if (empty($item->__key__)) {
                 throw new LogicException('Unable to create query for collection with mixed types.');
             }
         });
 
-        return DB::connection('datastore')->delete($this->pluck('_KEY_'));
+        return DB::connection('datastore')->delete($this->pluck('__key__'));
     }
 }
