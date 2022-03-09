@@ -131,22 +131,46 @@ trait QueryBuilderHelper
             throw new \LogicException('No kind/table specified');
         }
 
+        // Since every insert gets treated like a batch insert, we will make sure the
+        // bindings are structured in a way that is convenient when building these
+        // inserts statements by verifying these elements are actually an array.
         if (empty($values)) {
             return true;
         }
 
-        if (isset($values['id'])) {
-            $key = $this->getClient()->key($this->from, $values['id'], [
-                'identifierType' => Key::TYPE_NAME,
-            ]);
-            unset($values['id']);
-        } else {
-            throw new \LogicException('insert without key specified');
+        if (!\is_array(reset($values))) {
+            $values = [$values];
         }
 
-        $entity = $this->getClient()->entity($key, $values, $options);
+        // Here, we will sort the insert keys for every record so that each insert is
+        // in the same order for the record. We need to make sure this is the case
+        // so there are not any errors or problems when inserting these records.
+        else {
+            foreach ($values as $key => $value) {
+                ksort($value);
 
-        return $this->getClient()->insert($entity)->pathEndIdentifier();
+                $values[$key] = $value;
+            }
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        $entities = [];
+
+        foreach ($values as $key => $value) {
+            if (isset($value['id'])) {
+                $key = $this->getClient()->key($this->from, $value['id'], [
+                    'identifierType' => Key::TYPE_NAME,
+                ]);
+                unset($value['id']);
+            } else {
+                $key = $this->getClient()->key($this->from);
+            }
+
+            $entities[] = $this->getClient()->entity($key, $value, $options);
+        }
+
+        return false !== $this->getClient()->insertBatch($entities);
     }
 
     /**
