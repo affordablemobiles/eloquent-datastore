@@ -29,11 +29,12 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 ```
 
 ## Roadmap
-- [ ] Read data using query builder.
+- [x] Read data using query builder.
 - [x] Read data using eloquent model.
 - [x] Insert data using eloquent model.
 - [x] Update data using eloquent model.
-- [ ] Delete data.
+- [x] Delete data.
+- [x] Keys only queries.
 - [x] Auto-generated primary key.
 - [ ] Cursor Paginate.
 - [ ] Ancestor key relations.
@@ -86,24 +87,26 @@ DB::connection('datastore')
 It will return a collection.
 
 ## Tested Builder Functions
-- [ ] connection
-- [ ] table
+- [x] connection
+- [x] table
 - [ ] from
 - [ ] select (for projection query)
-- [ ] kind (same as table)
-- [ ] where (Available:  = , > , < , >= , <= )
+- [x] kind (same as table)
+- [x] where (Available:  = , > , < , >= , <= )
 - [ ] limit
 - [ ] take
 - [ ] skip
-- [ ] orderBy
-- [ ] get
+- [x] orderBy
+- [x] distinct
+- [x] get
+- [x] pluck
 - [ ] simplePaginate
 - [ ] paginate (works same as simplePaginate)
-- [ ] first
-- [ ] delete
-- [ ] insert
-- [ ] upsert
-- [ ] find / lookup
+- [x] first
+- [x] delete
+- [x] insert
+- [x] upsert
+- [x] find / lookup
 
 ## Contribution Guide
 
