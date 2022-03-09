@@ -7,6 +7,7 @@ namespace A1comms\EloquentDatastore\Query;
 use A1comms\EloquentDatastore\Helpers\QueryBuilderHelper;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use InvalidArgumentException;
 
 class Builder extends BaseBuilder
 {
@@ -50,8 +51,12 @@ class Builder extends BaseBuilder
      * @param string $direction
      * @param mixed  $column
      */
-    public function orderBy($column, $direction = 'ASCENDING'): self
+    public function orderBy($column, $direction = 'asc'): self
     {
+        if (!\in_array($direction, ['asc', 'desc'], true)) {
+            throw new InvalidArgumentException('Order direction must be "asc" or "desc".');
+        }
+
         $this->orders[] = [
             'column'    => $column,
             'direction' => $direction,
@@ -68,17 +73,6 @@ class Builder extends BaseBuilder
         $this->keysOnly = true;
 
         return $this;
-    }
-
-    /**
-     * Add an "order by" clause to the query.
-     *
-     * @param
-     * @param mixed $column
-     */
-    public function orderByDesc($column): self
-    {
-        return $this->orderBy($column, 'DESCENDING');
     }
 
     /**
