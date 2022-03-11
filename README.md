@@ -89,13 +89,12 @@ It will return a collection.
 ## Tested Builder Functions
 - [x] `connection`
 - [x] `table`
-- [ ] `from`
-- [ ] `select` (for projection query)
+- [x] `from`
+- [x] `select` (for projection query)
 - [x] `kind` (same as table)
 - [x] `where` (Available:  = , > , < , >= , <= )
-- [ ] `limit`
-- [ ] `take`
-- [ ] `skip`
+- [x] `limit` / `take`
+- [x] `skip`
 - [x] `orderBy`
 - [x] `distinct`
 - [x] `get`
