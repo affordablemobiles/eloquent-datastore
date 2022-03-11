@@ -109,8 +109,6 @@ It will return a collection.
 
 ## Contribution Guide
 
-**This driver is still not stable.**
-
 You can contribute by reporting bugs, fixing bugs, submitting and reviewing pull requests.
 
 Go to **issues** section, and you can start working on an issue immediately.
