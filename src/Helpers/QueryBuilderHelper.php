@@ -25,7 +25,7 @@ trait QueryBuilderHelper
      */
     public function lookup(Key $key, $columns = ['*'])
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () {
+        return $this->onceWithColumns(Arr::wrap($columns), function () use ($key, $columns) {
             if (!empty($columns)) {
                 $this->addSelect($columns);
             }
@@ -52,7 +52,7 @@ trait QueryBuilderHelper
      */
     public function get($columns = ['*'])
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () {
+        return $this->onceWithColumns(Arr::wrap($columns), function () use ($columns) {
             if (!empty($columns)) {
                 $this->addSelect($columns);
             }
