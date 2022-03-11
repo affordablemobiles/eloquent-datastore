@@ -276,7 +276,7 @@ abstract class Model extends BaseModel
         $dirty = $this->getDirty();
 
         if (\count($dirty) > 0) {
-            $query->upsert($this->getAttributes(), $this->getKey(), $this->getQueryOptions());
+            $query->_upsert($this->getAttributes(), $this->getKey(), $this->getQueryOptions());
 
             $this->syncChanges();
 

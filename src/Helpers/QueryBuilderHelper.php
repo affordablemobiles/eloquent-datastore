@@ -242,10 +242,7 @@ trait QueryBuilderHelper
         return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity])->pathEndIdentifier();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function upsert(array $values, $key = '', $options = [])
+    public function _upsert(array $values, $keys, $options = [])
     {
         if (empty($this->from)) {
             throw new \LogicException('No kind/table specified');
@@ -255,16 +252,39 @@ trait QueryBuilderHelper
             return true;
         }
 
-        if (isset($values['id'])) {
-            unset($values['id']);
+        if (!\is_array(reset($values))) {
+            $values = [$values];
+        } else {
+            foreach ($values as $key => $value) {
+                ksort($value);
+
+                $values[$key] = $value;
+            }
         }
 
-        if ($key instanceof Key) {
-            $entity = $this->getClient()->entity($key, $values, $options);
-
-            return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'upsert'], [$entity])->pathEndIdentifier();
+        if (!\is_array(reset($keys))) {
+            $keys = [$keys];
+        }
+        if (\count($keys) !== \count($values)) {
+            throw new LogicException('key count mismatch');
         }
 
-        throw new \LogicException('invalid key');
+        $entities = [];
+
+        foreach ($values as $index => $value) {
+            if (isset($value['id'])) {
+                unset($value['id']);
+            }
+
+            $key = $keys[$index];
+
+            if ($key instanceof Key) {
+                $entities[] = $this->getClient()->entity($key, $value, $options);
+            } else {
+                throw new \LogicException('invalid key');
+            }
+        }
+
+        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'upsertBatch'], [$entities]);
     }
 }

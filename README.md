@@ -56,7 +56,7 @@ You need to add `datastore` connection in `config/database.php` file.
 
 ### Access using Eloquent Model
 
-You need to extend `A1comms\EloquentDatastore\Eloquent\Model` class instead of laravel's default eloquent model class.
+You need to extend `A1comms\EloquentDatastore\Eloquent\Model` class instead of Laravel's default Eloquent model class.
 
 **Example-**
 ```php
@@ -87,26 +87,26 @@ DB::connection('datastore')
 It will return a collection.
 
 ## Tested Builder Functions
-- [x] connection
-- [x] table
-- [ ] from
-- [ ] select (for projection query)
-- [x] kind (same as table)
-- [x] where (Available:  = , > , < , >= , <= )
-- [ ] limit
-- [ ] take
-- [ ] skip
-- [x] orderBy
-- [x] distinct
-- [x] get
-- [x] pluck
-- [ ] simplePaginate
-- [ ] paginate (works same as simplePaginate)
-- [x] first
-- [x] delete
-- [x] insert
-- [x] upsert
-- [x] find / lookup
+- [x] `connection`
+- [x] `table`
+- [ ] `from`
+- [ ] `select` (for projection query)
+- [x] `kind` (same as table)
+- [x] `where` (Available:  = , > , < , >= , <= )
+- [ ] `limit`
+- [ ] `take`
+- [ ] `skip`
+- [x] `orderBy`
+- [x] `distinct`
+- [x] `get`
+- [x] `pluck`
+- [ ] `simplePaginate`
+- [ ] `paginate` (works same as simplePaginate)
+- [x] `first`
+- [x] `delete`
+- [x] `insert`
+- [x] `_upsert` (different and incompatible with default `upsert`)
+- [x] `find` / `lookup`
 
 ## Contribution Guide
 
