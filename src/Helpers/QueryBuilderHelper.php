@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Helpers;
 
+use A1comms\EloquentDatastore\Client\DatastoreClient;
+use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
 use Illuminate\Support\Arr;
@@ -35,7 +37,7 @@ trait QueryBuilderHelper
                 $this->columns = [];
             }
 
-            $result = $this->getClient()->lookup($key);
+            $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookup'], [$key]);
 
             if (!$result || empty($result)) {
                 return null;
@@ -94,7 +96,7 @@ trait QueryBuilderHelper
                 }
             }
 
-            $results = $this->getClient()->runQuery($query);
+            $results = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query]);
 
             return $this->processor->processResults($this, $results);
         });
@@ -161,7 +163,7 @@ trait QueryBuilderHelper
             }
         }
 
-        return $this->getClient()->deleteBatch($keys);
+        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'deleteBatch'], [$keys]);
     }
 
     /**
@@ -212,7 +214,7 @@ trait QueryBuilderHelper
             $entities[] = $this->getClient()->entity($key, $value, $options);
         }
 
-        return false !== $this->getClient()->insertBatch($entities);
+        return false !== (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insertBatch'], [$entities]);
     }
 
     /**
@@ -237,7 +239,7 @@ trait QueryBuilderHelper
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
-        return $this->getClient()->insert($entity)->pathEndIdentifier();
+        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity])->pathEndIdentifier();
     }
 
     /**
@@ -260,7 +262,7 @@ trait QueryBuilderHelper
         if ($key instanceof Key) {
             $entity = $this->getClient()->entity($key, $values, $options);
 
-            return $this->getClient()->upsert($entity)->pathEndIdentifier();
+            return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'upsert'], [$entity])->pathEndIdentifier();
         }
 
         throw new \LogicException('invalid key');
