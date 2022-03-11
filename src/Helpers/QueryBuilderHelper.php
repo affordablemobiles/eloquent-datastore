@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace A1comms\EloquentDatastore\Helpers;
 
 use A1comms\EloquentDatastore\Client\DatastoreClient;
+use A1comms\EloquentDatastore\Collection;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
@@ -54,11 +55,7 @@ trait QueryBuilderHelper
      */
     public function get($columns = ['*'])
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () use ($columns) {
-            if (!empty($columns)) {
-                $this->addSelect($columns);
-            }
-
+        return $this->onceWithColumns(Arr::wrap($columns), function () {
             // Drop all columns if * is present.
             if (\in_array('*', $this->columns, true)) {
                 $this->columns = [];
@@ -118,6 +115,9 @@ trait QueryBuilderHelper
         $queryResult = $this->get([$column]);
 
         if (empty($queryResult)) {
+            return collect();
+        }
+        if ($queryResult instanceof Collection && $queryResult->isEmpty()) {
             return collect();
         }
 
