@@ -11,6 +11,7 @@ use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
 use Illuminate\Support\Arr;
+use Illuminate\Database\Query\Builder as BaseBuilder;
 
 trait QueryBuilderHelper
 {
@@ -718,7 +719,7 @@ trait QueryBuilderHelper
         return false;
     }
 
-    public function addWhereExistsQuery(self $query, $boolean = 'and', $not = false)
+    public function addWhereExistsQuery(BaseBuilder $query, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
 
