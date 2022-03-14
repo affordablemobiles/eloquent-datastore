@@ -320,13 +320,39 @@ trait QueryBuilderHelper
     }
 
     /**
+     * Chunk the results of the query.
+     *
+     * @param int $count
+     *
+     * @return bool
+     */
+    public function chunk($count, callable $callback): void
+    {
+        throw new \LogicException('NEED TO IMPLEMENT');
+    }
+
+    /**
+     * Query lazily, by chunks of the given size.
+     *
+     * @param int $chunkSize
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return \Illuminate\Support\LazyCollection
+     */
+    public function lazy($chunkSize = 1000): void
+    {
+        throw new \LogicException('NEED TO IMPLEMENT');
+    }
+
+    /**
      * Determine if any rows exist for the current query.
      *
      * @return bool
      */
     public function exists()
     {
-        return  $this->clone()->keysOnly()->take(1)->get('*')->count() > 0;
+        return $this->clone()->keysOnly()->take(1)->get('*')->count() > 0;
     }
 
     /**
@@ -339,16 +365,6 @@ trait QueryBuilderHelper
     public function count($columns = '*')
     {
         return $this->clone()->keysOnly()->get($columns)->count();
-    }
-
-    public function chunk($count, callable $callback): void
-    {
-        throw new \LogicException('NEED TO IMPLEMENT');
-    }
-
-    public function lazy($chunkSize = 1000): void
-    {
-        throw new \LogicException('NEED TO IMPLEMENT');
     }
 
     public function chunkById($count, callable $callback, $column = null, $alias = null)
