@@ -6,6 +6,7 @@ namespace A1comms\EloquentDatastore\Helpers;
 
 use A1comms\EloquentDatastore\Client\DatastoreClient;
 use A1comms\EloquentDatastore\Collection;
+use Closure;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
