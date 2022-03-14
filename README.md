@@ -99,6 +99,8 @@ It will return a collection.
 - [x] `distinct`
 - [x] `get`
 - [x] `pluck`
+- [x] `exists`
+- [x] `count`
 - [ ] `simplePaginate`
 - [ ] `paginate` (works same as simplePaginate)
 - [x] `first`
