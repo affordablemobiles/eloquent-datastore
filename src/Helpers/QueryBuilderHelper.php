@@ -10,8 +10,8 @@ use Closure;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
-use Illuminate\Support\Arr;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Support\Arr;
 
 trait QueryBuilderHelper
 {
@@ -326,7 +326,7 @@ trait QueryBuilderHelper
      */
     public function exists()
     {
-        throw new \LogicException('NEED TO IMPLEMENT');
+        return  $this->clone()->keysOnly()->take(1)->get('*')->count() > 0;
     }
 
     /**
@@ -338,7 +338,45 @@ trait QueryBuilderHelper
      */
     public function count($columns = '*')
     {
+        return $this->clone()->keysOnly()->get($columns)->count();
+    }
+
+    public function chunk($count, callable $callback): void
+    {
         throw new \LogicException('NEED TO IMPLEMENT');
+    }
+
+    public function lazy($chunkSize = 1000): void
+    {
+        throw new \LogicException('NEED TO IMPLEMENT');
+    }
+
+    public function chunkById($count, callable $callback, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function eachById(callable $callback, $count = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function lazyById($chunkSize = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function lazyByIdDesc($chunkSize = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
     public function selectSub($query, $as)
