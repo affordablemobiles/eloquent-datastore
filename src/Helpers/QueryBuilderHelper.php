@@ -339,543 +339,759 @@ trait QueryBuilderHelper
         throw new \LogicException('NEED TO IMPLEMENT');
     }
 
-    public function selectSub($query, $as): void
+    public function selectSub($query, $as)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function selectRaw($expression, array $bindings = []): void
+    public function selectRaw($expression, array $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function fromSub($query, $as): void
+    public function fromSub($query, $as)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function fromRaw($expression, $bindings = []): void
+    public function fromRaw($expression, $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false): void
+    public function join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function joinWhere($table, $first, $operator, $second, $type = 'inner'): void
+    public function joinWhere($table, $first, $operator, $second, $type = 'inner')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function joinSub($query, $as, $first, $operator = null, $second = null, $type = 'inner', $where = false): void
+    public function joinSub($query, $as, $first, $operator = null, $second = null, $type = 'inner', $where = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function leftJoin($table, $first, $operator = null, $second = null): void
+    public function leftJoin($table, $first, $operator = null, $second = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function leftJoinWhere($table, $first, $operator, $second): void
+    public function leftJoinWhere($table, $first, $operator, $second)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function leftJoinSub($query, $as, $first, $operator = null, $second = null): void
+    public function leftJoinSub($query, $as, $first, $operator = null, $second = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function rightJoin($table, $first, $operator = null, $second = null): void
+    public function rightJoin($table, $first, $operator = null, $second = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function rightJoinWhere($table, $first, $operator, $second): void
+    public function rightJoinWhere($table, $first, $operator, $second)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function rightJoinSub($query, $as, $first, $operator = null, $second = null): void
+    public function rightJoinSub($query, $as, $first, $operator = null, $second = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function crossJoin($table, $first = null, $operator = null, $second = null): void
+    public function crossJoin($table, $first = null, $operator = null, $second = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function crossJoinSub($query, $as): void
+    public function crossJoinSub($query, $as)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereRaw($sql, $bindings = [], $boolean = 'and'): void
+    public function whereRaw($sql, $bindings = [], $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereRaw($sql, $bindings = []): void
+    public function orWhereRaw($sql, $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereIn($column, $values, $boolean = 'and', $not = false): void
+    public function whereIn($column, $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereIn($column, $values): void
+    public function orWhereIn($column, $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNotIn($column, $values, $boolean = 'and'): void
+    public function whereNotIn($column, $values, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNotIn($column, $values): void
+    public function orWhereNotIn($column, $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereIntegerInRaw($column, $values, $boolean = 'and', $not = false): void
+    public function whereIntegerInRaw($column, $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereIntegerInRaw($column, $values): void
+    public function orWhereIntegerInRaw($column, $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereIntegerNotInRaw($column, $values, $boolean = 'and'): void
+    public function whereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereIntegerNotInRaw($column, $values): void
+    public function orWhereIntegerNotInRaw($column, $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNull($columns, $boolean = 'and', $not = false): void
+    public function whereNull($columns, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNull($column): void
+    public function orWhereNull($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNotNull($columns, $boolean = 'and'): void
+    public function whereNotNull($columns, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false): void
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereBetweenColumns($column, array $values, $boolean = 'and', $not = false): void
+    public function whereBetweenColumns($column, array $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereBetween($column, iterable $values): void
+    public function orWhereBetween($column, iterable $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereBetweenColumns($column, array $values): void
+    public function orWhereBetweenColumns($column, array $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNotBetween($column, iterable $values, $boolean = 'and'): void
+    public function whereNotBetween($column, iterable $values, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNotBetweenColumns($column, array $values, $boolean = 'and'): void
+    public function whereNotBetweenColumns($column, array $values, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNotBetween($column, iterable $values): void
+    public function orWhereNotBetween($column, iterable $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNotBetweenColumns($column, array $values): void
+    public function orWhereNotBetweenColumns($column, array $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNotNull($column): void
+    public function orWhereNotNull($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereDate($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereDate($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereDate($column, $operator, $value = null): void
+    public function orWhereDate($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereTime($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereTime($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereTime($column, $operator, $value = null): void
+    public function orWhereTime($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereDay($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereDay($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereDay($column, $operator, $value = null): void
+    public function orWhereDay($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereMonth($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereMonth($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereMonth($column, $operator, $value = null): void
+    public function orWhereMonth($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereYear($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereYear($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereYear($column, $operator, $value = null): void
+    public function orWhereYear($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNested(Closure $callback, $boolean = 'and'): void
+    public function whereNested(Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function forNestedWhere(): void
+    public function forNestedWhere()
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function addNestedWhereQuery($query, $boolean = 'and'): void
+    public function addNestedWhereQuery($query, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereExists(Closure $callback, $boolean = 'and', $not = false): void
+    public function whereExists(Closure $callback, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereExists(Closure $callback, $not = false): void
+    public function orWhereExists(Closure $callback, $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereNotExists(Closure $callback, $boolean = 'and'): void
+    public function whereNotExists(Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereNotExists(Closure $callback): void
+    public function orWhereNotExists(Closure $callback)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function addWhereExistsQuery(self $query, $boolean = 'and', $not = false): void
+    public function addWhereExistsQuery(self $query, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereRowValues($columns, $operator, $values, $boolean = 'and'): void
+    public function whereRowValues($columns, $operator, $values, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereRowValues($columns, $operator, $values): void
+    public function orWhereRowValues($columns, $operator, $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereJsonContains($column, $value, $boolean = 'and', $not = false): void
+    public function whereJsonContains($column, $value, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereJsonContains($column, $value): void
+    public function orWhereJsonContains($column, $value)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereJsonDoesntContain($column, $value, $boolean = 'and'): void
+    public function whereJsonDoesntContain($column, $value, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereJsonDoesntContain($column, $value): void
+    public function orWhereJsonDoesntContain($column, $value)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereJsonLength($column, $operator, $value = null, $boolean = 'and'): void
+    public function whereJsonLength($column, $operator, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereJsonLength($column, $operator, $value = null): void
+    public function orWhereJsonLength($column, $operator, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function dynamicWhere($method, $parameters): void
+    public function dynamicWhere($method, $parameters)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function whereFullText($columns, $value, array $options = [], $boolean = 'and'): void
+    public function whereFullText($columns, $value, array $options = [], $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orWhereFullText($columns, $value, array $options = []): void
+    public function orWhereFullText($columns, $value, array $options = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function groupBy(...$groups): void
+    public function groupBy(...$groups)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function groupByRaw($sql, array $bindings = []): void
+    public function groupByRaw($sql, array $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function having($column, $operator = null, $value = null, $boolean = 'and'): void
+    public function having($column, $operator = null, $value = null, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orHaving($column, $operator = null, $value = null): void
+    public function orHaving($column, $operator = null, $value = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function havingNested(Closure $callback, $boolean = 'and'): void
+    public function havingNested(Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function addNestedHavingQuery($query, $boolean = 'and'): void
+    public function addNestedHavingQuery($query, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function havingNull($columns, $boolean = 'and', $not = false): void
+    public function havingNull($columns, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orHavingNull($column): void
+    public function orHavingNull($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function havingNotNull($columns, $boolean = 'and'): void
+    public function havingNotNull($columns, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orHavingNotNull($column): void
+    public function orHavingNotNull($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function havingBetween($column, array $values, $boolean = 'and', $not = false): void
+    public function havingBetween($column, array $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function havingRaw($sql, array $bindings = [], $boolean = 'and'): void
+    public function havingRaw($sql, array $bindings = [], $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orHavingRaw($sql, array $bindings = []): void
+    public function orHavingRaw($sql, array $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function inRandomOrder($seed = ''): void
+    public function inRandomOrder($seed = '')
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function orderByRaw($sql, $bindings = []): void
+    public function orderByRaw($sql, $bindings = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function union($query, $all = false): void
+    public function union($query, $all = false)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function unionAll($query): void
+    public function unionAll($query)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function lock($value = true): void
+    public function lock($value = true)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function lockForUpdate(): void
+    public function lockForUpdate()
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function sharedLock(): void
+    public function sharedLock()
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function toSql(): void
+    public function toSql()
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function getCountForPagination($columns = ['*']): void
+    public function getCountForPagination($columns = ['*'])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function existsOr(Closure $callback): void
+    public function existsOr(Closure $callback)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function doesntExistOr(Closure $callback): void
+    public function doesntExistOr(Closure $callback)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function min($column): void
+    public function min($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function max($column): void
+    public function max($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function sum($column): void
+    public function sum($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function avg($column): void
+    public function avg($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function average($column): void
+    public function average($column)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function aggregate($function, $columns = ['*']): void
+    public function aggregate($function, $columns = ['*'])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function numericAggregate($function, $columns = ['*']): void
+    public function numericAggregate($function, $columns = ['*'])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function insertOrIgnore(array $values): void
+    public function insertOrIgnore(array $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function insertUsing(array $columns, $query): void
+    public function insertUsing(array $columns, $query)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function update(array $values): void
+    public function update(array $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function updateFrom(array $values): void
+    public function updateFrom(array $values)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function updateOrInsert(array $attributes, array $values = []): void
+    public function updateOrInsert(array $attributes, array $values = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function upsert(array $values, $uniqueBy, $update = null): void
+    public function upsert(array $values, $uniqueBy, $update = null)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function increment($column, $amount = 1, array $extra = []): void
+    public function increment($column, $amount = 1, array $extra = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function decrement($column, $amount = 1, array $extra = []): void
+    public function decrement($column, $amount = 1, array $extra = [])
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function truncate(): void
+    public function truncate()
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    public function raw($value): void
+    public function raw($value)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 
-    protected function createSub($query): void
+    protected function createSub($query)
     {
         throw new \LogicException('Not Implemented');
+
+        return false;
     }
 }
