@@ -108,6 +108,7 @@ It will return a collection.
 - [x] `insert`
 - [x] `_upsert` (different and incompatible with default `upsert`)
 - [x] `find` / `lookup`
+- [x] `chunk` / `chunkMap` / `each`
 
 ## Contribution Guide
 
