@@ -27,7 +27,10 @@ class Processor extends BaseProcessor
             $nextPageCursor = $result->cursor();
         }
 
-        return new Collection($entities);
+        return [
+            'results' => new Collection($entities),
+            'cursor'  => $nextPageCursor,
+        ];
     }
 
     /**

@@ -15,6 +15,8 @@ class Builder extends BaseBuilder
 
     public $keysOnly = false;
 
+    public $startCursor;
+
     /**
      * All the available clause operators.
      *
@@ -71,6 +73,16 @@ class Builder extends BaseBuilder
     public function keys(): self
     {
         $this->keysOnly = true;
+
+        return $this;
+    }
+
+    /**
+     * Set the start cursor for the query.
+     */
+    public function startCursor(string $cursor): self
+    {
+        $this->startCursor = $cursor;
 
         return $this;
     }
