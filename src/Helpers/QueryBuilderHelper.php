@@ -30,11 +30,7 @@ trait QueryBuilderHelper
      */
     public function lookup(Key $key, $columns = ['*'])
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () use ($key, $columns) {
-            if (!empty($columns)) {
-                $this->addSelect($columns);
-            }
-
+        return $this->onceWithColumns(Arr::wrap($columns), function () use ($key) {
             // Drop all columns if * is present.
             if (\in_array('*', $this->columns, true)) {
                 $this->columns = [];
@@ -57,7 +53,7 @@ trait QueryBuilderHelper
      */
     public function get($columns = ['*'], $withCursor = false)
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () {
+        return $this->onceWithColumns(Arr::wrap($columns), function () use ($withCursor) {
             // Drop all columns if * is present.
             if (\in_array('*', $this->columns, true)) {
                 $this->columns = [];
