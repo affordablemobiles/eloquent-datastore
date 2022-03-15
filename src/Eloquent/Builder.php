@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Eloquent;
 
+use A1comms\EloquentDatastore\Helpers\BuildsQueries;
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class Builder extends EloquentBuilder
 {
+    use BuildsQueries;
+
     /**
      * Create a new Eloquent query builder instance.
      */
@@ -35,6 +38,14 @@ class Builder extends EloquentBuilder
     public function getClient()
     {
         return $this->query->getConnection()->getClient();
+    }
+
+    /**
+     * Return the end cursor from the last query.
+     */
+    public function lastCursor()
+    {
+        return $this->query->lastCursor();
     }
 
     /**

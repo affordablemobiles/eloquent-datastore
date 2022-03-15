@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Query;
 
+use A1comms\EloquentDatastore\Helpers\BuildsQueries;
 use A1comms\EloquentDatastore\Helpers\QueryBuilderHelper;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
@@ -11,11 +12,13 @@ use InvalidArgumentException;
 
 class Builder extends BaseBuilder
 {
+    use BuildsQueries;
     use QueryBuilderHelper;
 
     public $keysOnly = false;
 
-    public $startCursor;
+    public $startCursor = false;
+    public $endCursor   = false;
 
     /**
      * All the available clause operators.
@@ -79,12 +82,22 @@ class Builder extends BaseBuilder
 
     /**
      * Set the start cursor for the query.
+     *
+     * @param mixed $cursor
      */
-    public function startCursor(string $cursor): self
+    public function start($cursor): self
     {
         $this->startCursor = $cursor;
 
         return $this;
+    }
+
+    /**
+     * Return the end cursor from the last query.
+     */
+    public function lastCursor()
+    {
+        return $this->endCursor;
     }
 
     /**

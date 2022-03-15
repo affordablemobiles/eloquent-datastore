@@ -51,9 +51,9 @@ trait QueryBuilderHelper
     /**
      * {@inheritdoc}
      */
-    public function get($columns = ['*'], $withCursor = false)
+    public function get($columns = ['*'])
     {
-        return $this->onceWithColumns(Arr::wrap($columns), function () use ($withCursor) {
+        return $this->onceWithColumns(Arr::wrap($columns), function () {
             // Drop all columns if * is present.
             if (\in_array('*', $this->columns, true)) {
                 $this->columns = [];
@@ -69,8 +69,8 @@ trait QueryBuilderHelper
                 $query->keysOnly();
             }
 
-            if (null !== $this->startCursor) {
-                $query->startCursor($this->startCursor);
+            if (false !== $this->startCursor) {
+                $query->start($this->startCursor);
             }
 
             if (true === $this->distinct) {
@@ -97,13 +97,11 @@ trait QueryBuilderHelper
                 }
             }
 
-            $results = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query]);
+            $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query]);
+            $results         = $this->processor->processResults($this, $results);
+            $this->endCursor = $results['cursor'];
 
-            if ($withCursor) {
-                return $this->processor->processResults($this, $results);
-            }
-
-            return $this->processor->processResults($this, $results)['results'];
+            return $results['results'];
         });
     }
 
@@ -321,46 +319,6 @@ trait QueryBuilderHelper
     public function cursor()
     {
         throw new \LogicException('NEED TO IMPLEMENT');
-    }
-
-    /**
-     * Chunk the results of the query.
-     *
-     * @param int $count
-     */
-    public function chunk($count, callable $callback): bool
-    {
-        $cursor = null;
-
-        $page = 1;
-
-        do {
-            if (null !== $cursor) {
-                $this->startCursor($cursor);
-            }
-
-            $result       = $this->limit($count)->get(['*'], true);
-            $cursor       = $result['cursor'];
-            $results      = $result['results'];
-            $countResults = $results->count();
-
-            if (0 === $countResults) {
-                break;
-            }
-
-            // On each chunk result set, we will pass them to the callback and then let the
-            // developer take care of everything within the callback, which allows us to
-            // keep the memory low for spinning through large result sets for working.
-            if (false === $callback($results, $page)) {
-                return false;
-            }
-
-            unset($results);
-
-            ++$page;
-        } while ($countResults === $count);
-
-        return true;
     }
 
     /**
