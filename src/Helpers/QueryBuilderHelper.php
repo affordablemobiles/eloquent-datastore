@@ -318,21 +318,7 @@ trait QueryBuilderHelper
      */
     public function cursor()
     {
-        throw new \LogicException('NEED TO IMPLEMENT');
-    }
-
-    /**
-     * Query lazily, by chunks of the given size.
-     *
-     * @param int $chunkSize
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return \Illuminate\Support\LazyCollection
-     */
-    public function lazy($chunkSize = 1000): void
-    {
-        throw new \LogicException('NEED TO IMPLEMENT');
+        return $this->lazy();
     }
 
     /**
@@ -355,34 +341,6 @@ trait QueryBuilderHelper
     public function count($columns = '*')
     {
         return $this->clone()->keysOnly()->get($columns)->count();
-    }
-
-    public function chunkById($count, callable $callback, $column = null, $alias = null)
-    {
-        throw new \LogicException('Not Implemented');
-
-        return false;
-    }
-
-    public function eachById(callable $callback, $count = 1000, $column = null, $alias = null)
-    {
-        throw new \LogicException('Not Implemented');
-
-        return false;
-    }
-
-    public function lazyById($chunkSize = 1000, $column = null, $alias = null)
-    {
-        throw new \LogicException('Not Implemented');
-
-        return false;
-    }
-
-    public function lazyByIdDesc($chunkSize = 1000, $column = null, $alias = null)
-    {
-        throw new \LogicException('Not Implemented');
-
-        return false;
     }
 
     public function selectSub($query, $as)

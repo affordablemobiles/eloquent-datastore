@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Helpers;
 
+use Illuminate\Support\LazyCollection;
+
 trait BuildsQueries
 {
     /**
@@ -14,8 +16,7 @@ trait BuildsQueries
     public function chunk($count, callable $callback): bool
     {
         $cursor = null;
-
-        $page = 1;
+        $page   = 1;
 
         do {
             if (null !== $cursor) {
@@ -43,5 +44,71 @@ trait BuildsQueries
         } while ($countResults === $count);
 
         return true;
+    }
+
+    /**
+     * Query lazily, by chunks of the given size.
+     *
+     * @param int $chunkSize
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return \Illuminate\Support\LazyCollection
+     */
+    public function lazy($chunkSize = 150)
+    {
+        if ($chunkSize < 1) {
+            throw new InvalidArgumentException('The chunk size should be at least 1');
+        }
+
+        return LazyCollection::make(function () use ($chunkSize) {
+            $cursor = null;
+            $page   = 1;
+
+            while (true) {
+                if (null !== $cursor) {
+                    $this->start($cursor);
+                }
+                $results       = $this->limit($chunkSize)->get();
+                $cursor        = $this->lastCursor();
+                ++$page;
+
+                foreach ($results as $result) {
+                    yield $result;
+                }
+
+                if ($results->count() < $chunkSize) {
+                    return;
+                }
+            }
+        });
+    }
+
+    public function chunkById($count, callable $callback, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function eachById(callable $callback, $count = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function lazyById($chunkSize = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    public function lazyByIdDesc($chunkSize = 1000, $column = null, $alias = null)
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
     }
 }
