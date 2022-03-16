@@ -16,7 +16,10 @@ use Illuminate\Support\Arr;
 trait QueryBuilderHelper
 {
     /**
-     * {@inheritdoc}
+     * Retrieve a single entity using key.
+     *
+     * @param mixed $id
+     * @param mixed $columns
      */
     public function find($id, $columns = ['*'])
     {
@@ -26,14 +29,25 @@ trait QueryBuilderHelper
     /**
      * Retrieve a single entity using key.
      *
+     * @param mixed $key
      * @param mixed $columns
      */
-    public function lookup(Key $key, $columns = ['*'])
+    public function lookup($key, $columns = ['*'])
     {
         return $this->onceWithColumns(Arr::wrap($columns), function () use ($key) {
             // Drop all columns if * is present.
             if (\in_array('*', $this->columns, true)) {
                 $this->columns = [];
+            }
+
+            if (\is_array($key)) {
+                $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->getClient()->key($this->from, $id), $key);
+
+                $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookupBatch'], [$key]);
+
+                $result = array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
+
+                return empty($this->columns) ? $result : array_map(fn ($res) => Arr::only($res, Arr::wrap($this->columns)), $result);
             }
 
             $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookup'], [$key]);
@@ -164,8 +178,6 @@ trait QueryBuilderHelper
                 } else {
                     $keys = [$this->getClient()->key($this->from, $key)];
                 }
-
-                return $keys;
             }
         }
 

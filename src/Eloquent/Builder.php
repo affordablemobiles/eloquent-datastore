@@ -6,6 +6,7 @@ namespace A1comms\EloquentDatastore\Eloquent;
 
 use A1comms\EloquentDatastore\Helpers\BuildsQueries;
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
+use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class Builder extends EloquentBuilder
@@ -55,6 +56,32 @@ class Builder extends EloquentBuilder
     {
         $result = $this->query->find(
             $this->model->getKey($id),
+            $columns
+        );
+
+        if (null === $result) {
+            return null;
+        }
+
+        return $this->hydrate([
+            $result,
+        ])->first();
+    }
+
+    public function lookup($key, $columns = [])
+    {
+        if (\is_array($key)) {
+            $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->model->getKey($id), $key);
+
+            $results = $this->query->lookup($key, $columns);
+
+            return $this->hydrate($results);
+        }
+
+        $key = $key instanceof Key ? $key : $this->model->getKey($key);
+
+        $result = $this->query->find(
+            $key,
             $columns
         );
 
