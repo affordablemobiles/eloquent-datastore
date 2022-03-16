@@ -109,6 +109,7 @@ It will return a collection.
 - [x] `_upsert` (different and incompatible with default `upsert`)
 - [x] `find` / `lookup`
 - [x] `chunk` / `chunkMap` / `each`
+- [x] `lazy` / `cursor`
 
 ## Contribution Guide
 
