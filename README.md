@@ -30,13 +30,14 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 
 ## Roadmap
 - [x] Read data using query builder.
-- [x] Read data using eloquent model.
-- [x] Insert data using eloquent model.
-- [x] Update data using eloquent model.
+- [x] Read data using Eloquent model.
+- [x] Insert data using Eloquent model.
+- [x] Update data using Eloquent model.
 - [x] Delete data.
 - [x] Keys only queries.
 - [x] Auto-generated primary key.
 - [x] Read multiple pages of data with Datastore cursors.
+- [x] Batch update from Eloquent collection.
 - [ ] Cursor Paginate.
 - [ ] Ancestor key relations.
 
