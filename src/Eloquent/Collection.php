@@ -30,6 +30,30 @@ class Collection extends BaseCollection
     }
 
     /**
+     * Update all entities in the DB.
+     */
+    public function update()
+    {
+        // Prepare the models for update...
+        $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
+
+        // Remove any empty entries (not dirty)...
+        $entities = array_filter($entities);
+
+        $model = $this->first();
+
+        $model->newQueryWithoutScopes()->_upsert(
+            array_map(fn ($entity) => $entity['attributes'], $entities),
+            array_map(fn ($entity) => $entity['key'], $entities),
+            $model->getQueryOptions(),
+        );
+
+        $this->map(fn ($entity) => $entity->finishBulkUpsert());
+
+        return true;
+    }
+
+    /**
      * Delete the whole collection.
      */
     public function delete()

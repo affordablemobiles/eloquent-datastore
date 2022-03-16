@@ -208,10 +208,8 @@ trait QueryBuilderHelper
         // in the same order for the record. We need to make sure this is the case
         // so there are not any errors or problems when inserting these records.
         else {
-            foreach ($values as $key => $value) {
+            foreach ($values as $key => &$value) {
                 ksort($value);
-
-                $values[$key] = $value;
             }
         }
 
@@ -273,16 +271,15 @@ trait QueryBuilderHelper
         if (!\is_array(reset($values))) {
             $values = [$values];
         } else {
-            foreach ($values as $key => $value) {
+            foreach ($values as $key => &$value) {
                 ksort($value);
-
-                $values[$key] = $value;
             }
         }
 
-        if (!\is_array(reset($keys))) {
+        if (!\is_array($keys)) {
             $keys = [$keys];
         }
+
         if (\count($keys) !== \count($values)) {
             throw new LogicException('key count mismatch');
         }

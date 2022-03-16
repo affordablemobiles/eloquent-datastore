@@ -185,6 +185,60 @@ abstract class Model extends BaseModel
         return new Collection($models);
     }
 
+    public function prepareBulkUpsert()
+    {
+        // If the updating event returns false, we will cancel the update operation so
+        // developers can hook Validation systems into their models and cancel this
+        // operation if the model does not pass validation. Otherwise, we update.
+        if (false === $this->fireModelEvent('updating')) {
+            return false;
+        }
+
+        // Once we have run the update operation, we will fire the "updated" event for
+        // this model instance. This will allow developers to hook into these after
+        // models are updated, giving them a chance to do any special processing.
+        $dirty = $this->getDirty();
+
+        if (\count($dirty) > 0) {
+            // First we need to create a fresh query instance and touch the creation and
+            // update timestamp on the model which are maintained by us for developer
+            // convenience. Then we will just continue saving the model instances.
+            if ($this->usesTimestamps()) {
+                $this->updateTimestamps();
+            }
+
+            return [
+                'key'        => $this->getKey(),
+                'attributes' => $this->getAttributes(),
+            ];
+        }
+
+        return [];
+    }
+
+    public function finishBulkUpsert()
+    {
+        $dirty = $this->getDirty();
+
+        if (\count($dirty) > 0) {
+            $this->syncChanges();
+
+            $this->fireModelEvent('updated', false);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get options for the DatastoreClient.
+     */
+    public function getQueryOptions(): array
+    {
+        return [
+            'excludeFromIndexes' => $this->excludeFromIndexes,
+        ];
+    }
+
     /**
      * Perform a model insert operation.
      *
@@ -263,19 +317,19 @@ abstract class Model extends BaseModel
             return false;
         }
 
-        // First we need to create a fresh query instance and touch the creation and
-        // update timestamp on the model which are maintained by us for developer
-        // convenience. Then we will just continue saving the model instances.
-        if ($this->usesTimestamps()) {
-            $this->updateTimestamps();
-        }
-
         // Once we have run the update operation, we will fire the "updated" event for
         // this model instance. This will allow developers to hook into these after
         // models are updated, giving them a chance to do any special processing.
         $dirty = $this->getDirty();
 
         if (\count($dirty) > 0) {
+            // First we need to create a fresh query instance and touch the creation and
+            // update timestamp on the model which are maintained by us for developer
+            // convenience. Then we will just continue saving the model instances.
+            if ($this->usesTimestamps()) {
+                $this->updateTimestamps();
+            }
+
             $query->_upsert($this->getAttributes(), $this->getKey(), $this->getQueryOptions());
 
             $this->syncChanges();
@@ -284,16 +338,6 @@ abstract class Model extends BaseModel
         }
 
         return true;
-    }
-
-    /**
-     * Get options for the DatastoreClient.
-     */
-    protected function getQueryOptions(): array
-    {
-        return [
-            'excludeFromIndexes' => $this->excludeFromIndexes,
-        ];
     }
 
     /**
