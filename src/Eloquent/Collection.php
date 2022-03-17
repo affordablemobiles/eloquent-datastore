@@ -32,7 +32,7 @@ class Collection extends BaseCollection
     /**
      * Update all entities in the DB.
      */
-    public function update()
+    public function save()
     {
         // Prepare the models for update...
         $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
@@ -51,6 +51,15 @@ class Collection extends BaseCollection
         $this->map(fn ($entity) => $entity->finishBulkUpsert());
 
         return true;
+    }
+
+    /**
+     * Update all entities in the DB:
+     *  Alias for $collection->save().
+     */
+    public function update()
+    {
+        return $this->save();
     }
 
     /**
