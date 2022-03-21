@@ -22,7 +22,7 @@ class Collection extends BaseCollection
             return new static();
         }
 
-        $model = $this->first();
+        $model = $this->prepareBulkQuery();
 
         return $model->newQueryWithoutScopes()
             ->lookup($this->modelKeys())
@@ -34,13 +34,13 @@ class Collection extends BaseCollection
      */
     public function save()
     {
+        $model = $this->prepareBulkQuery();
+
         // Prepare the models for update...
         $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
 
         // Remove any empty entries (not dirty)...
         $entities = array_filter($entities);
-
-        $model = $this->first();
 
         $model->newQueryWithoutScopes()->_upsert(
             array_map(fn ($entity) => $entity['attributes'], $entities),
@@ -67,6 +67,13 @@ class Collection extends BaseCollection
      */
     public function delete()
     {
+        $model = $this->prepareBulkQuery();
+
+        return $model->newModelQuery()->toBase()->delete($this->modelKeys());
+    }
+
+    protected function prepareBulkQuery()
+    {
         $model = $this->first();
 
         if (!$model) {
@@ -81,6 +88,6 @@ class Collection extends BaseCollection
             }
         });
 
-        return $model->newModelQuery()->toBase()->delete($this->modelKeys());
+        return $model;
     }
 }
