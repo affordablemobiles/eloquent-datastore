@@ -34,6 +34,10 @@ class Collection extends BaseCollection
      */
     public function save()
     {
+        if ($this->isEmpty()) {
+            return true;
+        }
+
         $model = $this->prepareBulkQuery();
 
         // Prepare the models for update...
@@ -67,6 +71,10 @@ class Collection extends BaseCollection
      */
     public function delete()
     {
+        if ($this->isEmpty()) {
+            return true;
+        }
+        
         $model = $this->prepareBulkQuery();
 
         return $model->newModelQuery()->toBase()->delete($this->modelKeys());
