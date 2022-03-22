@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Named;
 
-use App\Models\Basket;
+use App\Http\Controllers\Controller;
+use App\Models\Named\Basket;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -44,26 +45,20 @@ class BasketController extends Controller
      */
     public function add(Request $request)
     {
+        // Has the user already got an item in the basket?
+        // If not setup a new ID to use.
+        $id = session('basket_id', uniqid('', true));
+
+        // Find or create a basket with our ID...
+        $basket = Basket::firstOrNew([
+            'id' => $id,
+        ]);
+
+        // Prepare our input...
         $handset_id   = $request->input('handset_id', 0);
         $tariff_id    = $request->input('tariff_id', 0);
         $adnetwork    = $request->input('adnetwork', '');
         $campaign     = $request->input('campaign', '');
-
-        // Create a new basket object to use as fallback
-        //  if we don't find an existing one...
-        $basket = new Basket();
-
-        // Grab an existing basket ID from the session,
-        //  if it exists...
-        $id = session('basket_id', false);
-        if ($id) {
-            try {
-                // Try to fetch the existing basket
-                // from the DB to update it...
-                $basket = Basket::findOrFail($id);
-            } catch (ModelNotFoundException $ex) {
-            }
-        }
 
         // Set the data into the basket.
         $basket->handset_id   = (int) $handset_id;
@@ -78,6 +73,6 @@ class BasketController extends Controller
         session(['basket_id' => $basket->id]);
 
         // Send the user to the basket index.
-        return redirect()->route('basket.index');
+        return redirect()->route('basket.named.index');
     }
 }

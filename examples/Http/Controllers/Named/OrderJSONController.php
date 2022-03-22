@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Named;
 
-use App\Models\Order;
+use App\Http\Controllers\Controller;
+use App\Models\Named\Order;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -77,6 +78,9 @@ class OrderJSONController extends Controller
         // Create a new order object...
         $order = new Order();
 
+        // Set a generated key/id...
+        $order->id = uniqid('', true);
+
         // Set the data on the model attribute...
         $order->details = (array) $details;
 
@@ -89,7 +93,7 @@ class OrderJSONController extends Controller
         session(['order_id' => $order->id]);
 
         // Send the user to the order index.
-        return redirect()->route('order.index');
+        return redirect()->route('order.named.index');
     }
 
     /**
@@ -124,6 +128,6 @@ class OrderJSONController extends Controller
         $order->save();
 
         // Send the user to the order index.
-        return redirect()->route('order.index');
+        return redirect()->route('order.named.index');
     }
 }

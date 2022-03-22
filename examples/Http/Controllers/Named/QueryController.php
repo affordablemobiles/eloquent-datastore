@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Named;
 
-use App\Models\People;
+use App\Http\Controllers\Controller;
+use App\Models\Named\People;
 use Illuminate\Support\Facades\DB;
 
 class QueryController extends Controller
@@ -16,7 +17,7 @@ class QueryController extends Controller
         // Raw query using the Query Builder.
         // Returns a collection of arrays of entity data.
         $rawCollection = DB::connection('datastore')
-            ->table('laravel-query')
+            ->table('laravel-query-named')
             ->where('last_name', 'Melrose')
             // ->orderBy('first_name') // disabled due to secondary index requirement.
             ->get()
