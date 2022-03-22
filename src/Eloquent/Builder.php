@@ -93,4 +93,44 @@ class Builder extends EloquentBuilder
             $result,
         ])->first();
     }
+
+    /**
+     * Get the first record matching the attributes or instantiate it.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function firstOrNew(array $attributes = [], array $values = [])
+    {
+        if (null !== ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
+            return $instance;
+        }
+
+        return $this->newModelInstance(array_merge($attributes, $values));
+    }
+
+    /**
+     * Get the first record matching the attributes or create it.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function firstOrCreate(array $attributes = [], array $values = [])
+    {
+        if (null !== ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
+            return $instance;
+        }
+
+        return tap($this->newModelInstance(array_merge($attributes, $values)), function ($instance): void {
+            $instance->save();
+        });
+    }
+
+    protected function remapWhereForSelect(array $attributes)
+    {
+        if (!empty($attributes['id'])) {
+            $attributes['__key__'] = $this->model->getKey($attributes['id']);
+            unset($attributes['id']);
+        }
+
+        return $attributes;
+    }
 }

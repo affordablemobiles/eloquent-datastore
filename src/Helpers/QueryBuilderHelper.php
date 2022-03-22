@@ -352,6 +352,24 @@ trait QueryBuilderHelper
         return $this->clone()->keysOnly()->get($columns)->count();
     }
 
+    /**
+     * Add a nested where statement to the query.
+     *
+     * Datastore doesn't support nested where queries,
+     *  but we need support for this for some other functionality
+     *  so we'll just add them as standard WHERE conditions.
+     *
+     * @param string $boolean
+     *
+     * @return $this
+     */
+    public function whereNested(Closure $callback, $boolean = 'and')
+    {
+        $callback($this);
+
+        return $this;
+    }
+
     public function selectSub($query, $as)
     {
         throw new \LogicException('Not Implemented');
@@ -675,13 +693,6 @@ trait QueryBuilderHelper
     }
 
     public function orWhereYear($column, $operator, $value = null)
-    {
-        throw new \LogicException('Not Implemented');
-
-        return false;
-    }
-
-    public function whereNested(Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
 
