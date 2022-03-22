@@ -74,7 +74,7 @@ class Collection extends BaseCollection
         if ($this->isEmpty()) {
             return true;
         }
-        
+
         $model = $this->prepareBulkQuery();
 
         return $model->newModelQuery()->toBase()->delete($this->modelKeys());
