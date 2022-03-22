@@ -187,6 +187,10 @@ abstract class Model extends BaseModel
 
     public function prepareBulkUpsert()
     {
+        if (!$this->exists) {
+            throw new \LogicException('Bulk Upsert Only Available for Existing Records');
+        }
+
         // If the updating event returns false, we will cancel the update operation so
         // developers can hook Validation systems into their models and cancel this
         // operation if the model does not pass validation. Otherwise, we update.
