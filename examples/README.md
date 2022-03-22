@@ -4,7 +4,7 @@
 
 * [`SELECT` style queries](Http/Controllers/QueryController.php)
      * [Associated model](Models/People.php)
-* [DML queries](Http/Controllers/QueryController.php) (`INSERT` / `UPDATE` / `DELETE`)
+* [DML queries](Http/Controllers/DMLQueryController.php) (`INSERT` / `UPDATE` / `DELETE`)
      * [Associated model](Models/People.php)
 * [JSON Cast example](Http/Controllers/OrderJSONController.php)
      * [Associated model](Models/Order.php)
@@ -15,7 +15,7 @@
 
 * [`SELECT` style queries](Http/Controllers/Named/QueryController.php)
      * [Associated model](Models/Named/People.php)
-* [DML queries](Http/Controllers/Named/QueryController.php) (`INSERT` / `UPDATE` / `DELETE`)
+* [DML queries](Http/Controllers/Named/DMLQueryController.php) (`INSERT` / `UPDATE` / `DELETE`)
      * [Associated model](Models/Named/People.php)
 * [JSON Cast example](Http/Controllers/Named/OrderJSONController.php)
      * [Associated model](Models/Named/Order.php)
