@@ -345,6 +345,30 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Set the keys for a select query.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function setKeysForSelectQuery($query)
+    {
+        $query->where('__key__', '=', $this->getKeyForSelectQuery());
+
+        return $query;
+    }
+
+    /**
+     * Get the primary key value for a select query.
+     *
+     * @return mixed
+     */
+    protected function getKeyForSelectQuery()
+    {
+        return $this->original['__key__'] ?? $this->getKey();
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function newBaseQueryBuilder()

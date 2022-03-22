@@ -30,4 +30,34 @@ trait ModelHelper
 
         return true;
     }
+
+    /**
+     * Destroy the models for the given IDs.
+     *
+     * @param array|\Illuminate\Support\Collection|int|string $ids
+     *
+     * @return int
+     */
+    public static function destroy($ids)
+    {
+        if ($ids instanceof EloquentCollection) {
+            $ids = $ids->modelKeys();
+        }
+
+        if ($ids instanceof BaseCollection) {
+            $ids = $ids->all();
+        }
+
+        $ids = \is_array($ids) ? $ids : \func_get_args();
+
+        if (0 === \count($ids)) {
+            return 0;
+        }
+
+        $records = $this->newModelQuery()->lookup($ids, ['__key__']);
+
+        $records->delete();
+
+        return \count($ids);
+    }
 }
