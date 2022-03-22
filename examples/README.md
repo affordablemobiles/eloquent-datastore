@@ -1,6 +1,6 @@
 ## Examples
 
-### Auto Generated Primary Key
+### Auto Generated `int` Primary Key
 
 * [`SELECT` style queries](Http/Controllers/QueryController.php)
      * [Associated model](Models/People.php)
@@ -10,3 +10,14 @@
      * [Associated model](Models/Order.php)
 * Real world-ish [Basket example](Http/Controllers/BasketController.php)
      * [Associated model](Models/Basket.php)
+
+### User Generated `string` Primary Key
+
+* [`SELECT` style queries](Http/Controllers/Named/QueryController.php)
+     * [Associated model](Models/Named/People.php)
+* [DML queries](Http/Controllers/Named/QueryController.php) (`INSERT` / `UPDATE` / `DELETE`)
+     * [Associated model](Models/Named/People.php)
+* [JSON Cast example](Http/Controllers/Named/OrderJSONController.php)
+     * [Associated model](Models/Named/Order.php)
+* Real world-ish [Basket example](Http/Controllers/Named/BasketController.php)
+     * [Associated model](Models/Named/Basket.php)
