@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Eloquent;
 
-use A1comms\EloquentDatastore\Helpers\ModelHelper;
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
@@ -13,8 +12,6 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
 {
-    use ModelHelper;
-
     /**
      * Indicates if the IDs are auto-incrementing.
      *

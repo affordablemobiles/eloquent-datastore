@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Helpers;
+namespace A1comms\EloquentDatastore\Concerns;
 
 use Illuminate\Support\LazyCollection;
 
