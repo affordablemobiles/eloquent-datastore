@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Helpers;
+namespace A1comms\EloquentDatastore\Query\Concerns;
 
 use A1comms\EloquentDatastore\Client\DatastoreClient;
 use A1comms\EloquentDatastore\Collection;
@@ -13,7 +13,7 @@ use Google\Cloud\Datastore\Query\Query;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Arr;
 
-trait QueryBuilderHelper
+trait QueriesDatastore
 {
     /**
      * Retrieve a single entity using key.

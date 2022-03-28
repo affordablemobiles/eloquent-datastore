@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Query;
 
-use A1comms\EloquentDatastore\Helpers\BuildsQueries;
-use A1comms\EloquentDatastore\Helpers\QueryBuilderHelper;
+use A1comms\EloquentDatastore\Concerns\BuildsQueries;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use InvalidArgumentException;
@@ -13,7 +12,7 @@ use InvalidArgumentException;
 class Builder extends BaseBuilder
 {
     use BuildsQueries;
-    use QueryBuilderHelper;
+    use Concerns\QueriesDatastore;
 
     public $keysOnly = false;
 

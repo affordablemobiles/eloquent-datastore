@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Eloquent;
 
-use A1comms\EloquentDatastore\Helpers\BuildsQueries;
+use A1comms\EloquentDatastore\Concerns\BuildsQueries;
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
