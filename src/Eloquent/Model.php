@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
 {
+    use Concerns\HasRelationships;
+
     /**
      * Indicates if the IDs are auto-incrementing.
      *

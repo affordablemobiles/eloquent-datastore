@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace A1comms\EloquentDatastore\Query;
 
 use A1comms\EloquentDatastore\Concerns\BuildsQueries;
+use Google\Cloud\Datastore\Key;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use InvalidArgumentException;
@@ -13,8 +14,6 @@ class Builder extends BaseBuilder
 {
     use BuildsQueries;
     use Concerns\QueriesDatastore;
-
-    public $keysOnly = false;
 
     public $startCursor = false;
     public $endCursor   = false;
@@ -28,6 +27,8 @@ class Builder extends BaseBuilder
         '=', '<', '>', '<=', '>=',
         'EQUAL', 'LESS_THAN', 'GREATER_THAN	', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN_OR_EQUAL',
     ];
+    protected $keysOnly = false;
+    protected $ancestor = false;
 
     /**
      * {@inheritdoc}
@@ -75,6 +76,16 @@ class Builder extends BaseBuilder
     public function keys(): self
     {
         $this->keysOnly = true;
+
+        return $this;
+    }
+
+    /**
+     * set ancestor key.
+     */
+    public function hasAncestor(Key $key): self
+    {
+        $this->ancestor = $key;
 
         return $this;
     }

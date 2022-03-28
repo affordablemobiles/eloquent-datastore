@@ -83,6 +83,10 @@ trait QueriesDatastore
                 $query->keysOnly();
             }
 
+            if ($this->ancestor) {
+                $query->hasAncestor($this->ancestor);
+            }
+
             if (false !== $this->startCursor) {
                 $query->start($this->startCursor);
             }
