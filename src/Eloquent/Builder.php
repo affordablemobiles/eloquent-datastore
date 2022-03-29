@@ -68,6 +68,11 @@ class Builder extends EloquentBuilder
         ])->first();
     }
 
+    public function _upsert(array $values, $keys, $options = [])
+    {
+        return $this->query->_upsert($values, $keys, $options);
+    }
+
     public function lookup($key, $columns = [])
     {
         if (\is_array($key)) {

@@ -44,15 +44,27 @@ class Collection extends BaseCollection
         $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
 
         // Remove any empty entries (not dirty)...
-        $entities = array_filter($entities);
+        $rEntities = array_filter($entities);
 
-        $model->newQueryWithoutScopes()->_upsert(
-            array_map(fn ($entity) => $entity['attributes'], $entities),
-            array_map(fn ($entity) => $entity['key'], $entities),
+        $resultKeys = $model->newQueryWithoutScopes()->_upsert(
+            array_map(fn ($entity) => $entity['attributes'], $rEntities),
+            array_map(fn ($entity) => $entity['key'], $rEntities),
             $model->getQueryOptions(),
         );
 
-        $this->map(fn ($entity) => $entity->finishBulkUpsert());
+        $empty = 0;
+
+        $this->map(function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
+            $id = null;
+
+            if (empty($entities[$index])) {
+                ++$empty;
+            } else {
+                $id = $resultKeys[($index - $empty)]->pathEndIdentifier();
+            }
+
+            $entity->finishBulkUpsert($id);
+        });
 
         return true;
     }

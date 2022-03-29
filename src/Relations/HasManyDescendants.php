@@ -36,7 +36,7 @@ class HasManyDescendants extends Relation
      */
     public function firstOrNew(array $attributes = [], array $values = [])
     {
-        if (null === ($instance = $this->where($attributes)->first())) {
+        if (null === ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
             $instance = $this->related->newInstance(array_merge($attributes, $values));
 
             $this->setForeignAttributesForCreate($instance);
@@ -52,7 +52,7 @@ class HasManyDescendants extends Relation
      */
     public function firstOrCreate(array $attributes = [], array $values = [])
     {
-        if (null === ($instance = $this->where($attributes)->first())) {
+        if (null === ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
             $instance = $this->create(array_merge($attributes, $values));
         }
 
@@ -108,11 +108,18 @@ class HasManyDescendants extends Relation
      */
     public function saveMany($models)
     {
-        foreach ($models as $model) {
-            $this->save($model);
+        foreach ($models as &$model) {
+            // Only set the attributes here,
+            // don't actually save individually...
+            $this->setForeignAttributesForCreate($model);
         }
 
-        return $models;
+        // Perform a bulk upsert for better performance
+        // on Datastore...
+        $modelCollection = new Collection((array) $models);
+        $modelCollection->save();
+
+        return $modelCollection;
     }
 
     /**
@@ -278,5 +285,15 @@ class HasManyDescendants extends Relation
     protected function setForeignAttributesForCreate(Model $model): void
     {
         $model->setAttribute($this->getForeignKeyName(), $this->getParentKey());
+    }
+
+    protected function remapWhereForSelect(array $attributes)
+    {
+        if (!empty($attributes['id'])) {
+            $attributes['__key__'] = $this->related->getKey($attributes['id']);
+            unset($attributes['id']);
+        }
+
+        return $attributes;
     }
 }
