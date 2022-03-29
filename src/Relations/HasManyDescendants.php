@@ -116,7 +116,7 @@ class HasManyDescendants extends Relation
 
         // Perform a bulk upsert for better performance
         // on Datastore...
-        $modelCollection = new Collection((array) $models);
+        $modelCollection = $this->related->newCollection((array) $models);
         $modelCollection->save();
 
         return $modelCollection;
@@ -143,13 +143,15 @@ class HasManyDescendants extends Relation
      */
     public function createMany(iterable $records)
     {
-        $instances = $this->related->newCollection();
+        // Create a new instance & fill it with the attributes
+        // and ancestor data, but don't save it individually.
+        $modelCollection = $this->makeMany($records);
 
-        foreach ($records as $record) {
-            $instances->push($this->create($record));
-        }
+        // Perform a bulk upsert for better performance
+        // on Datastore...
+        $modelCollection->save();
 
-        return $instances;
+        return $modelCollection;
     }
 
     /**
@@ -160,9 +162,17 @@ class HasManyDescendants extends Relation
         $model = $this->getRelated();
 
         if (!$model::isIgnoringTouch()) {
-            $this->rawUpdate([
-                $model->getUpdatedAtColumn() => $model->freshTimestampString(),
-            ]);
+            // Load in the relations:
+            //  This is NoSQL after all, so we can't
+            //  do a single column update without
+            //  loading in the whole record first.
+            $modelCollection = $this->getResults();
+            // Touch the timestamps but don't
+            // update anything individually...
+            $modelCollection->map(fn ($entity) => $entity->updateTimestamps());
+            // Perform a bulk upsert for better performance
+            // on Datastore...
+            $modelCollection->save();
         }
     }
 
