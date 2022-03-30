@@ -39,7 +39,7 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 - [x] Read multiple pages of data with Datastore cursors.
 - [x] Batch update from Eloquent collection.
 - [ ] Cursor Paginate.
-- [ ] Ancestor key relations.
+- [x] Ancestor key relations.
 
 ## Usage
 
