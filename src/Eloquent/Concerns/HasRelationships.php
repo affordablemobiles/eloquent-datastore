@@ -14,6 +14,9 @@ trait HasRelationships
      */
     public function hasManyDescendants(string $related): HasManyDescendants
     {
+        $instance = $this->newRelatedInstance($related);
+
+        return new hasManyDescendants($instance->newQuery(), $this);
     }
 
     /**
