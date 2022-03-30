@@ -221,13 +221,20 @@ trait QueriesDatastore
 
         $entities = [];
 
-        foreach ($values as $key => $value) {
+        foreach ($values as $index => $value) {
+            $key = null;
+
             if (isset($value['id'])) {
                 $key = $this->getClient()->key($this->from, $value['id'], [
                     'identifierType' => Key::TYPE_NAME,
                 ]);
                 unset($value['id']);
-            } else {
+            } elseif (isset($value['__key__'])) {
+                $key = $value['__key__'] instanceof Key ? $value['__key__'] : null;
+                unset($value['__key__']);
+            }
+
+            if (null === $key) {
                 $key = $this->getClient()->key($this->from);
             }
 
@@ -251,11 +258,19 @@ trait QueriesDatastore
             throw new \LogicException('No kind/table specified');
         }
 
+        $key = null;
+
         if (isset($values['id'])) {
             throw new \LogicException('insertGetId with key set');
         }
+        if (isset($values['__key__'])) {
+            $key = $values['__key__'] instanceof Key ? $values['__key__'] : null;
+            unset($values['__key__']);
+        }
 
-        $key = $this->getClient()->key($this->from);
+        if (null === $key) {
+            $key = $this->getClient()->key($this->from);
+        }
 
         $entity = $this->getClient()->entity($key, $values, $options);
 

@@ -64,30 +64,35 @@ abstract class Model extends BaseModel
             );
         }
 
+        $key = null;
         if ((!$this->exists) && $this->incrementing) {
             // If the record doesn't yet exist
             // and we are using auto generated keys,
             // return an incomplete key.
-            return $this->getConnection()->getClient()->key(
+            $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
                 null,
                 [
                     'identifierType' => Key::TYPE_ID,
                 ]
             );
-        }
-
-        if (!isset($this->attributes['__key__'])) {
-            return $this->getConnection()->getClient()->key(
+        } elseif (isset($this->attributes['__key__'])) {
+            return $this->attributes['__key__'];
+        } else {
+            $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string) $this->attributes['id'],
+                $this->attributes['id'],
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                 ]
             );
         }
 
-        return $this->attributes['__key__'];
+        if (isset($this->attributes['__parent__'])) {
+            $key->ancestorKey($this->attributes['__parent__']);
+        }
+
+        return $key;
     }
 
     /**
@@ -98,7 +103,7 @@ abstract class Model extends BaseModel
         $this->mergeAttributesFromCachedCasts();
 
         $attributes = $this->attributes;
-        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__']);
+        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__'], $attributes['__parent__']);
 
         return $attributes;
     }
@@ -396,7 +401,15 @@ abstract class Model extends BaseModel
         $attributes = $this->getAttributesForInsert();
 
         if ($this->getIncrementing()) {
-            $this->insertAndSetId($query, $attributes);
+            $this->insertAndSetId(
+                $query,
+                array_merge(
+                    [
+                        '__key__' => $this->getKey(),
+                    ],
+                    $attributes
+                )
+            );
         }
 
         // If the table isn't incrementing we'll simply insert these attributes as they
@@ -407,7 +420,15 @@ abstract class Model extends BaseModel
                 return true;
             }
 
-            $query->insert($attributes, $this->getQueryOptions());
+            $query->insert(
+                array_merge(
+                    [
+                        '__key__' => $this->getKey(),
+                    ],
+                    $attributes
+                ),
+                $this->getQueryOptions()
+            );
         }
 
         // We will go ahead and set the exists property to true, so that it is set when

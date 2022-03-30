@@ -259,6 +259,18 @@ class HasManyDescendants extends Relation
     }
 
     /**
+     * Run a raw update against the base query.
+     *
+     * @return int
+     */
+    public function rawUpdate(array $attributes = [])
+    {
+        throw new \LogicException('Not Implemented');
+
+        return false;
+    }
+
+    /**
      * Initialize the relation on a set of models.
      *
      * @param string $relation
@@ -288,12 +300,36 @@ class HasManyDescendants extends Relation
     }
 
     /**
+     * Get the plain foreign key.
+     *
+     * @return string
+     */
+    public function getForeignKeyName()
+    {
+        return '__parent__';
+    }
+
+    /**
+     * Get the key value of the parent's local key.
+     *
+     * @return mixed
+     */
+    public function getParentKey()
+    {
+        return $this->parent->getKey();
+    }
+
+    /**
      * Set the foreign ID for creating a related model.
      *
      * @param \Illuminate\Database\Eloquent\Model $model
      */
     protected function setForeignAttributesForCreate(Model $model): void
     {
+        if ($model->exists) {
+            throw new \LogicException("Can't change ancestor key on a saved model");
+        }
+
         $model->setAttribute($this->getForeignKeyName(), $this->getParentKey());
     }
 
