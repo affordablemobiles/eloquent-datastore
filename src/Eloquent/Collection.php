@@ -53,7 +53,11 @@ class Collection extends BaseCollection
         );
 
         $empty = 0;
-
+        // Finish up by applying any returned auto-generated numeric keys
+        //  to the models in the collection...
+        // This looks complicated as the array of records we actually upserted
+        //  in the query might not match our source collection (shorter array length),
+        //  as we're only inserting ones that are dirty.
         $this->map(function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
             $id = null;
 
