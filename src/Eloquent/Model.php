@@ -82,7 +82,7 @@ abstract class Model extends BaseModel
         } else {
             $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                $this->attributes['id'],
+                (string) $this->attributes['id'],
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                 ]

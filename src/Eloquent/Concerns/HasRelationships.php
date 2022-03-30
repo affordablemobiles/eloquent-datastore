@@ -24,7 +24,10 @@ trait HasRelationships
      *
      * @param null|string $relation
      */
-    public function belongsToAncestor(string $related, $relation = null): BelongsToAncestor
+    public function belongsToAncestor(string $related): BelongsToAncestor
     {
+        $instance = $this->newRelatedInstance($related);
+
+        return new BelongsToAncestor($instance->newQuery(), $this);
     }
 }
