@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use A1comms\EloquentDatastore\Eloquent\Collection;
 use App\Models\People;
 use Illuminate\Support\Facades\DB;
 
@@ -58,6 +59,36 @@ class DMLQueryController extends Controller
         $id = $person->id;
 
         return redirect()->route('query.index');
+    }
+
+    public function insertMulti(): void
+    {
+        $modelCollection = new Collection([
+            People::make([
+                'first_name' => 'Samuel',
+                'last_name'  => 'Melrose',
+            ]),
+            People::make([
+                'first_name' => 'Elisa',
+                'last_name'  => 'Melrose',
+            ]),
+            People::make([
+                'first_name' => 'Christopher',
+                'last_name'  => 'Melrose',
+            ]),
+            People::make([
+                'first_name' => 'Harper',
+                'last_name'  => 'Melrose',
+            ]),
+            People::make([
+                'first_name' => 'Harold',
+                'last_name'  => 'Fisher',
+            ]),
+        ]);
+
+        $modelCollection->save();
+
+        dd($modelCollection);
     }
 
     public function update()
