@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Relations;
 
-use A1comms\EloquentDatastore\Eloquent\Collection;
 use A1comms\EloquentDatastore\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 class HasManyDescendants extends Relation
@@ -249,13 +250,27 @@ class HasManyDescendants extends Relation
     /**
      * Get the results of the relationship.
      *
+     * @param mixed $columns
+     *
      * @return mixed
      */
-    public function getResults()
+    public function getResults($columns = ['*'])
     {
         return null !== $this->getParentKey()
-                ? $this->query->get()
+                ? $this->query->get($columns)
                 : $this->related->newCollection();
+    }
+
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param array $columns
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function get($columns = ['*'])
+    {
+        return $this->getResults();
     }
 
     /**
@@ -289,8 +304,7 @@ class HasManyDescendants extends Relation
     /**
      * Match the eagerly loaded results to their parents.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $results
-     * @param string                                   $relation
+     * @param string $relation
      *
      * @return array
      */

@@ -16,7 +16,7 @@ trait HasRelationships
     {
         $instance = $this->newRelatedInstance($related);
 
-        return new hasManyDescendants($instance->newQuery(), $this);
+        return new HasManyDescendants($instance->newQuery(), $this);
     }
 
     /**

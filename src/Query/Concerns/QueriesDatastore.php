@@ -83,7 +83,7 @@ trait QueriesDatastore
                 $query->keysOnly();
             }
 
-            if ($this->ancestor) {
+            if ($this->ancestor instanceof Key) {
                 $query->hasAncestor($this->ancestor);
             }
 
@@ -116,7 +116,7 @@ trait QueriesDatastore
             }
 
             $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query]);
-            $results         = $this->processor->processResults($this, $results);
+            $results         = $this->processor->processResults($this, $results, $this->ancestor);
             $this->endCursor = $results['cursor'];
 
             return $results['results'];
