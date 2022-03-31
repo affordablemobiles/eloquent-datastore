@@ -40,6 +40,7 @@ A1comms\EloquentDatastore\DatastoreServiceProvider::class,
 - [x] Batch update from Eloquent collection.
 - [ ] Cursor Paginate.
 - [x] Ancestor key relations.
+- [x] Datastore Namespaces (Multi-Tenancy).
 
 ## Usage
 
@@ -92,6 +93,7 @@ It will return a collection.
 - [x] `connection`
 - [x] `table`
 - [x] `from`
+- [x] `namespace` (Datastore Namespace: Multi Tenancy)
 - [x] `select` (for projection query)
 - [x] `kind` (same as table)
 - [x] `where` (Available:  = , > , < , >= , <= )
