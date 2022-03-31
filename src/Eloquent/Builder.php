@@ -8,6 +8,7 @@ use A1comms\EloquentDatastore\Concerns\BuildsQueries;
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 
 class Builder extends EloquentBuilder
 {
@@ -39,6 +40,22 @@ class Builder extends EloquentBuilder
     public function getClient()
     {
         return $this->query->getConnection()->getClient();
+    }
+
+    /**
+     * Set a model instance for the model being queried.
+     *
+     * @return $this
+     */
+    public function setModel(Model $model)
+    {
+        $this->model = $model;
+
+        $this->query->from($model->getTable());
+
+        $this->query->namespace($model->getNamespace());
+
+        return $this;
     }
 
     /**

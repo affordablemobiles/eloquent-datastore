@@ -29,6 +29,7 @@ class Builder extends BaseBuilder
     ];
     protected $keysOnly = false;
     protected $ancestor = false;
+    protected $namespaceId;
 
     /**
      * {@inheritdoc}
@@ -86,6 +87,16 @@ class Builder extends BaseBuilder
     public function hasAncestor(Key $key): self
     {
         $this->ancestor = $key;
+
+        return $this;
+    }
+
+    /**
+     * set the namespace.
+     */
+    public function namespace(string $namespaceId): self
+    {
+        $this->namespaceId = $namespaceId;
 
         return $this;
     }

@@ -30,6 +30,14 @@ abstract class Model extends BaseModel
     protected $connection = 'datastore';
 
     /**
+     * The Datastore `namespace` to use for this model.
+     *  null / unspecified means it'll be the default.
+     *
+     * @var null|string
+     */
+    protected $namespace;
+
+    /**
      * A list of attributes to exclude from the default indexing strategy.
      *
      * @var string
@@ -61,6 +69,7 @@ abstract class Model extends BaseModel
                 (string) $id,
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
+                    'namespaceId'    => $this->namespace,
                 ]
             );
         }
@@ -75,6 +84,7 @@ abstract class Model extends BaseModel
                 null,
                 [
                     'identifierType' => Key::TYPE_ID,
+                    'namespaceId'    => $this->namespace,
                 ]
             );
         } elseif (isset($this->attributes['__key__'])) {
@@ -85,6 +95,7 @@ abstract class Model extends BaseModel
                 (string) $this->attributes['id'],
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
+                    'namespaceId'    => $this->namespace,
                 ]
             );
         }
@@ -94,6 +105,16 @@ abstract class Model extends BaseModel
         }
 
         return $key;
+    }
+
+    /**
+     * Get the table associated with the model.
+     *
+     * @return string
+     */
+    public function getNamespace()
+    {
+        return $this->namespace;
     }
 
     /**

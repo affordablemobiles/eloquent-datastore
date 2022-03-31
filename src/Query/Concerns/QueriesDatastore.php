@@ -41,7 +41,7 @@ trait QueriesDatastore
             }
 
             if (\is_array($key)) {
-                $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->getClient()->key($this->from, $id), $key);
+                $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->getClient()->key($this->from, $id, $this->getClientOptions()), $key);
 
                 $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookupBatch'], [$key]);
 
@@ -115,7 +115,7 @@ trait QueriesDatastore
                 }
             }
 
-            $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query]);
+            $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query, $this->getClientOptions()]);
             $results         = $this->processor->processResults($this, $results, $this->ancestor);
             $this->endCursor = $results['cursor'];
 
@@ -178,9 +178,9 @@ trait QueriesDatastore
                 $keys = Arr::wrap($key);
             } else {
                 if (\is_array($key)) {
-                    $keys = array_map(fn ($item) => $item instanceof Key ? $item : $this->getClient()->key($this->from, $item), $key);
+                    $keys = array_map(fn ($item) => $item instanceof Key ? $item : $this->getClient()->key($this->from, $item, $this->getClientOptions()), $key);
                 } else {
-                    $keys = [$this->getClient()->key($this->from, $key)];
+                    $keys = [$this->getClient()->key($this->from, $key, $this->getClientOptions())];
                 }
             }
         }
@@ -225,7 +225,7 @@ trait QueriesDatastore
             $key = null;
 
             if (isset($value['id'])) {
-                $key = $this->getClient()->key($this->from, $value['id'], [
+                $key = $this->getClient()->key($this->from, $value['id'], $this->getClientOptions() + [
                     'identifierType' => Key::TYPE_NAME,
                 ]);
                 unset($value['id']);
@@ -235,7 +235,7 @@ trait QueriesDatastore
             }
 
             if (null === $key) {
-                $key = $this->getClient()->key($this->from);
+                $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
             }
 
             $entities[] = $this->getClient()->entity($key, $value, $options);
@@ -269,7 +269,7 @@ trait QueriesDatastore
         }
 
         if (null === $key) {
-            $key = $this->getClient()->key($this->from);
+            $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
         }
 
         $entity = $this->getClient()->entity($key, $values, $options);
@@ -1129,6 +1129,13 @@ trait QueriesDatastore
         throw new \LogicException('Not Implemented');
 
         return false;
+    }
+
+    protected function getClientOptions(): array
+    {
+        return [
+            'namespaceId' => $this->namespaceId,
+        ];
     }
 
     protected function createSub($query)
