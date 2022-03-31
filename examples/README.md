@@ -8,6 +8,7 @@
      * [Associated model](Models/People.php)
 * [Ancestor Queries & Relationships](Http/Controllers/AncestorQueryController.php)
      * [Associated model](Models/People.php)
+* [Setting a Namespace](Models/Order.php) (see `__construct()`)
 * [JSON Cast example](Http/Controllers/OrderJSONController.php)
      * [Associated model](Models/Order.php)
 * Real world-ish [Basket example](Http/Controllers/BasketController.php)

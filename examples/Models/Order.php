@@ -79,4 +79,18 @@ class Order extends Model
     protected $casts = [
         'details' => AsArrayObject::class,
     ];
+
+    /**
+     * Create a new Eloquent model instance.
+     */
+    public function __construct(array $attributes = [])
+    {
+        // Set the Datastore namespace,
+        //  to something dynamically determined at runtime.
+        //  This is a pretty poor example of a namespaceId value,
+        //  but hopefully you get the idea.
+        $this->namespace = gmdate('Y-m-d');
+
+        parent::__construct($attributes);
+    }
 }
