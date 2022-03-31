@@ -55,4 +55,22 @@ class People extends Model
         'first_name',
         'last_name',
     ];
+
+    /**
+     * Descendant relationship with children
+     *  using ancestor queries...
+     */
+    public function children()
+    {
+        return $this->hasManyDescendants(self::class);
+    }
+
+    /**
+     * Ancestor relationship with parent,
+     *  using the key path...
+     */
+    public function parent()
+    {
+        return $this->belongsToAncestor(self::class);
+    }
 }

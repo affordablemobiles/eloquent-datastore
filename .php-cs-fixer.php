@@ -17,6 +17,7 @@ $config
         'heredoc_indentation'    => false,
         '@PhpCsFixer'            => true,
         '@PhpCsFixer:risky'      => true,
+        'strict_comparison'      => false,
         'binary_operator_spaces' => [
             'default'   => 'align',
             'operators' => [

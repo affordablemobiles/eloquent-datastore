@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
 {
+    use Concerns\HasRelationships;
+    use Concerns\QueriesRelationships;
+
     /**
      * Indicates if the IDs are auto-incrementing.
      *
@@ -62,8 +65,22 @@ abstract class Model extends BaseModel
             );
         }
 
-        if (!isset($this->attributes['__key__'])) {
-            return $this->getConnection()->getClient()->key(
+        $key = null;
+        if ((!$this->exists) && $this->incrementing) {
+            // If the record doesn't yet exist
+            // and we are using auto generated keys,
+            // return an incomplete key.
+            $key = $this->getConnection()->getClient()->key(
+                $this->getTable(),
+                null,
+                [
+                    'identifierType' => Key::TYPE_ID,
+                ]
+            );
+        } elseif (isset($this->attributes['__key__'])) {
+            return $this->attributes['__key__'];
+        } else {
+            $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
                 (string) $this->attributes['id'],
                 [
@@ -72,7 +89,11 @@ abstract class Model extends BaseModel
             );
         }
 
-        return $this->attributes['__key__'];
+        if (isset($this->attributes['__parent__'])) {
+            $key->ancestorKey($this->attributes['__parent__']);
+        }
+
+        return $key;
     }
 
     /**
@@ -83,7 +104,7 @@ abstract class Model extends BaseModel
         $this->mergeAttributesFromCachedCasts();
 
         $attributes = $this->attributes;
-        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__']);
+        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__'], $attributes['__parent__']);
 
         return $attributes;
     }
@@ -238,7 +259,7 @@ abstract class Model extends BaseModel
     public function prepareBulkUpsert()
     {
         if (!$this->exists) {
-            throw new \LogicException('Bulk Upsert Only Available for Existing Records');
+            return $this->prepareBulkInsert();
         }
 
         // If the updating event returns false, we will cancel the update operation so
@@ -270,8 +291,51 @@ abstract class Model extends BaseModel
         return [];
     }
 
-    public function finishBulkUpsert()
+    public function prepareBulkInsert()
     {
+        if (false === $this->fireModelEvent('creating')) {
+            return false;
+        }
+
+        // First we'll need to create a fresh query instance and touch the creation and
+        // update timestamps on this model, which are maintained by us for developer
+        // convenience. After, we will just continue saving these model instances.
+        if ($this->usesTimestamps()) {
+            $this->updateTimestamps();
+        }
+
+        // If the model has an incrementing key, we can use the "insertGetId" method on
+        // the query builder, which will give us back the final inserted ID for this
+        // table from the database. Not all tables have to be incrementing though.
+        $attributes = $this->getAttributesForInsert();
+
+        if ($this->getIncrementing()) {
+            return [
+                'key'        => $this->getKey(),
+                'attributes' => $attributes,
+            ];
+        }
+
+        // If the table isn't incrementing we'll simply insert these attributes as they
+        // are. These attribute arrays must contain an "id" column previously placed
+        // there by the developer as the manually determined key for these models.
+
+        if (empty($attributes)) {
+            return [];
+        }
+
+        return [
+            'key'        => $this->getKey(),
+            'attributes' => $attributes,
+        ];
+    }
+
+    public function finishBulkUpsert($id = null)
+    {
+        if (!$this->exists) {
+            return $this->finishBulkInsert($id);
+        }
+
         $dirty = $this->getDirty();
 
         if (\count($dirty) > 0) {
@@ -279,6 +343,27 @@ abstract class Model extends BaseModel
 
             $this->fireModelEvent('updated', false);
         }
+
+        return true;
+    }
+
+    public function finishBulkInsert($id = null)
+    {
+        if ($this->getIncrementing()) {
+            if (!empty($id)) {
+                // Set the auto generated key ID on a bulk insert...
+                $this->setAttribute($this->getKeyName(), $id);
+            }
+        }
+
+        // We will go ahead and set the exists property to true, so that it is set when
+        // the created event is fired, just in case the developer tries to update it
+        // during the event. This will allow them to do so and run an update here.
+        $this->exists = true;
+
+        $this->wasRecentlyCreated = true;
+
+        $this->fireModelEvent('created', false);
 
         return true;
     }
@@ -317,7 +402,15 @@ abstract class Model extends BaseModel
         $attributes = $this->getAttributesForInsert();
 
         if ($this->getIncrementing()) {
-            $this->insertAndSetId($query, $attributes);
+            $this->insertAndSetId(
+                $query,
+                array_merge(
+                    [
+                        '__key__' => $this->getKey(),
+                    ],
+                    $attributes
+                )
+            );
         }
 
         // If the table isn't incrementing we'll simply insert these attributes as they
@@ -328,7 +421,15 @@ abstract class Model extends BaseModel
                 return true;
             }
 
-            $query->insert($attributes, $this->getQueryOptions());
+            $query->insert(
+                array_merge(
+                    [
+                        '__key__' => $this->getKey(),
+                    ],
+                    $attributes
+                ),
+                $this->getQueryOptions()
+            );
         }
 
         // We will go ahead and set the exists property to true, so that it is set when

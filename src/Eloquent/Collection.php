@@ -44,15 +44,31 @@ class Collection extends BaseCollection
         $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
 
         // Remove any empty entries (not dirty)...
-        $entities = array_filter($entities);
+        $rEntities = array_filter($entities);
 
-        $model->newQueryWithoutScopes()->_upsert(
-            array_map(fn ($entity) => $entity['attributes'], $entities),
-            array_map(fn ($entity) => $entity['key'], $entities),
+        $resultKeys = $model->newQueryWithoutScopes()->_upsert(
+            array_map(fn ($entity) => $entity['attributes'], $rEntities),
+            array_map(fn ($entity) => $entity['key'], $rEntities),
             $model->getQueryOptions(),
         );
 
-        $this->map(fn ($entity) => $entity->finishBulkUpsert());
+        $empty = 0;
+        // Finish up by applying any returned auto-generated numeric keys
+        //  to the models in the collection...
+        // This looks complicated as the array of records we actually upserted
+        //  in the query might not match our source collection (shorter array length),
+        //  as we're only inserting ones that are dirty.
+        $this->map(function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
+            $id = null;
+
+            if (empty($entities[$index])) {
+                ++$empty;
+            } else {
+                $id = $resultKeys[($index - $empty)]->pathEndIdentifier();
+            }
+
+            $entity->finishBulkUpsert($id);
+        });
 
         return true;
     }
