@@ -85,6 +85,25 @@ class Builder extends EloquentBuilder
         ])->first();
     }
 
+    /**
+     * Find multiple models by their primary keys.
+     *
+     * @param array|\Illuminate\Contracts\Support\Arrayable $ids
+     * @param array                                         $columns
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function findMany($ids, $columns = ['*'])
+    {
+        $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
+
+        if (empty($ids)) {
+            return $this->model->newCollection();
+        }
+
+        return $this->lookup($ids, $columns);
+    }
+
     public function _upsert(array $values, $keys, $options = [])
     {
         return $this->query->_upsert($values, $keys, $options);
