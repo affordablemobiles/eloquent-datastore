@@ -416,6 +416,60 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Reload a fresh model instance from the database.
+     *
+     * @param array|string $with
+     *
+     * @return null|static
+     */
+    public function fresh($with = [])
+    {
+        if (!$this->exists) {
+            return;
+        }
+
+        if (!empty($with)) {
+            throw new \LogicException('$with attribute unsupported');
+        }
+
+        $query = $this->newModelQuery();
+
+        $query->flushQueryCacheWithTag(
+            $this->getCacheTagForFind()
+        );
+
+        return $query->find($this->id);
+    }
+
+    /**
+     * Reload the current model instance with fresh attributes from the database.
+     *
+     * @return $this
+     */
+    public function refresh()
+    {
+        if (!$this->exists) {
+            return $this;
+        }
+
+        $query = $this->newBaseQueryBuilder();
+
+        $query->flushQueryCacheWithTag(
+            $this->getCacheTagForFind()
+        );
+
+        $this->setRawAttributes(
+            $query->find(
+                $this->getKey()
+            )
+        );
+
+        $this->syncOriginal();
+
+        return $this;
+    }
+
+    /**
      * Perform a model insert operation.
      *
      * @return bool
