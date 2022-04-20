@@ -18,17 +18,6 @@ trait QueriesDatastore
     /**
      * Retrieve a single entity using key.
      *
-     * @param mixed $id
-     * @param mixed $columns
-     */
-    public function find($id, $columns = ['*'])
-    {
-        return $this->lookup($id, $columns);
-    }
-
-    /**
-     * Retrieve a single entity using key.
-     *
      * @param mixed $key
      * @param mixed $columns
      */

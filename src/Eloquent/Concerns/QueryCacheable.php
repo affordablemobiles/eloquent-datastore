@@ -25,11 +25,18 @@ trait QueryCacheable
     public function getCacheTagsToInvalidateOnUpdate($relation = null, $pivotedModels = null): array
     {
         return array_merge(
-            $this->getCacheTagForFind(),
+            [
+                $this->getCacheTagForFind(),
+            ],
             $this->getCacheBaseTags(),
         );
     }
 
+    /**
+     * Get a cache tag identifying a single record by ID.
+     *
+     * @param null|mixed $id
+     */
     public function getCacheTagForFind($id = null): string
     {
         if (null === $id) {
@@ -37,6 +44,17 @@ trait QueryCacheable
         }
 
         return (string) static::class.':'.(string) $id;
+    }
+
+    /**
+     * Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
+     *  this is designed for use mainly with the `array` cache driver for inside a single request.
+     */
+    public function recacheFetchQuery()
+    {
+        return $this->newModelQuery()->cacheTags([
+            $this->getCacheTagForFind(),
+        ])->recacheFetchQuery($this->id, $this->attributes);
     }
 
     /**

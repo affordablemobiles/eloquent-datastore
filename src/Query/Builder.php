@@ -95,8 +95,10 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
 
     /**
      * set the namespace.
+     *
+     * @param mixed $namespaceId
      */
-    public function namespace(string $namespaceId): self
+    public function namespace($namespaceId): self
     {
         $this->namespaceId = $namespaceId;
 

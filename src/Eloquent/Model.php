@@ -31,6 +31,14 @@ abstract class Model extends BaseModel
     public $cacheDriver = 'array';
 
     /**
+     * Invalidate the cache automatically
+     * upon update in the database.
+     *
+     * @var bool
+     */
+    protected static $flushCacheOnUpdate = true;
+
+    /**
      * Set default connection to datastore.
      *
      * @var string

@@ -30,8 +30,8 @@ class FlushQueryCacheObserver extends ParentFlushQueryCacheObserver
 
         $class::flushQueryCache($tags);
 
-        $class::cacheTags([
-            $model->getCacheTagForFind(),
-        ])->recacheFetchQuery($model->id, $model->attributes);
+        // Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
+        //  this is designed for use mainly with the `array` cache driver for inside a single request.
+        $model->recacheFetchQuery();
     }
 }

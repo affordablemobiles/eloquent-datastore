@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace A1comms\EloquentDatastore\Query\Concerns;
 
+use Google\Cloud\Datastore\Key;
+use Illuminate\Support\Arr;
 use Rennokki\QueryCache\Traits\QueryCacheModule as ParentQueryCacheModule;
 
 trait QueryCacheModule
@@ -19,13 +21,13 @@ trait QueryCacheModule
      *
      * @return array
      */
-    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], string $id = null)
+    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], string|Key $id = null)
     {
         if (null === $this->columns) {
             $this->columns = $columns;
         }
 
-        $key      = $this->getCacheKey($method, $id);
+        $key      = $this->getCacheKey($method, $id instanceof Key ? serialize($id) : $id);
         $cache    = $this->getCache();
         $callback = $this->getQueryCacheCallback($method, $columns, $id);
         $time     = $this->getCacheFor();
@@ -37,7 +39,15 @@ trait QueryCacheModule
         return $cache->rememberForever($key, $callback);
     }
 
-    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], string $id = null)
+    /**
+     * Get the query cache callback.
+     *
+     * @param array|string $columns
+     * @param null|string  $id
+     *
+     * @return \Closure
+     */
+    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], string|Key $id = null)
     {
         return function () use ($method, $columns, $id) {
             $this->avoidCache = true;
@@ -59,10 +69,14 @@ trait QueryCacheModule
             return $this->getFromQueryCache('find', Arr::wrap($columns), $id);
         }
 
-        return parent::find($id, $columns);
+        return $this->lookup($id, $columns);
     }
 
-    public function recacheFetchQuery($id, $attributes)
+    /**
+     * Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
+     *  this is designed for use mainly with the `array` cache driver for inside a single request.
+     */
+    public function recacheFetchQuery(string $id, array $attributes)
     {
         if (null === $this->columns) {
             $this->columns = ['*'];
