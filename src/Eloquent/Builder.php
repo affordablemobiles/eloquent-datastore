@@ -71,7 +71,9 @@ class Builder extends EloquentBuilder
      */
     public function find($id, $columns = [])
     {
-        $result = $this->query->find(
+        $result = $this->query->cacheTags([
+            $this->model->getCacheTagForFind($id),
+        ])->find(
             $this->model->getKey($id),
             $columns
         );

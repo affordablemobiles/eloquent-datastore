@@ -14,6 +14,7 @@ abstract class Model extends BaseModel
 {
     use Concerns\HasRelationships;
     use Concerns\QueriesRelationships;
+    use Concerns\QueryCacheable;
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -21,6 +22,13 @@ abstract class Model extends BaseModel
      * @var bool
      */
     public $incrementing = true;
+
+    /**
+     * The cache driver to be used.
+     *
+     * @var string
+     */
+    public $cacheDriver = 'array';
 
     /**
      * Set default connection to datastore.
@@ -540,13 +548,11 @@ abstract class Model extends BaseModel
         return $this->original['__key__'] ?? $this->getKey();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function newBaseQueryBuilder()
+    // {@inheritdoc}
+    /* protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
 
         return new QueryBuilder($connection);
-    }
+    } */
 }

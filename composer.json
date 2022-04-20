@@ -21,7 +21,8 @@
         "illuminate/pagination": "^9",
         "illuminate/database": "^9",
         "illuminate/http": "^9",
-        "google/cloud-datastore": "^1.13.3"
+        "google/cloud-datastore": "^1.13.3",
+        "rennokki/laravel-eloquent-query-cache": "~3"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
