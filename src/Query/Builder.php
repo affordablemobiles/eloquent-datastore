@@ -9,11 +9,13 @@ use Google\Cloud\Datastore\Key;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use InvalidArgumentException;
+use Rennokki\QueryCache\Contracts\QueryCacheModuleInterface;
 
-class Builder extends BaseBuilder
+class Builder extends BaseBuilder implements QueryCacheModuleInterface
 {
     use BuildsQueries;
     use Concerns\QueriesDatastore;
+    use Concerns\QueryCacheModule;
 
     public $startCursor = false;
     public $endCursor   = false;
@@ -93,8 +95,10 @@ class Builder extends BaseBuilder
 
     /**
      * set the namespace.
+     *
+     * @param mixed $namespaceId
      */
-    public function namespace(string $namespaceId): self
+    public function namespace($namespaceId): self
     {
         $this->namespaceId = $namespaceId;
 

@@ -14,6 +14,7 @@ abstract class Model extends BaseModel
 {
     use Concerns\HasRelationships;
     use Concerns\QueriesRelationships;
+    use Concerns\QueryCacheable;
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -21,6 +22,21 @@ abstract class Model extends BaseModel
      * @var bool
      */
     public $incrementing = true;
+
+    /**
+     * The cache driver to be used.
+     *
+     * @var string
+     */
+    public $cacheDriver = 'array';
+
+    /**
+     * Invalidate the cache automatically
+     * upon update in the database.
+     *
+     * @var bool
+     */
+    protected static $flushCacheOnUpdate = true;
 
     /**
      * Set default connection to datastore.
@@ -400,6 +416,60 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Reload a fresh model instance from the database.
+     *
+     * @param array|string $with
+     *
+     * @return null|static
+     */
+    public function fresh($with = [])
+    {
+        if (!$this->exists) {
+            return;
+        }
+
+        if (!empty($with)) {
+            throw new \LogicException('$with attribute unsupported');
+        }
+
+        $query = $this->newModelQuery();
+
+        $query->flushQueryCacheWithTag(
+            $this->getCacheTagForFind()
+        );
+
+        return $query->find($this->id);
+    }
+
+    /**
+     * Reload the current model instance with fresh attributes from the database.
+     *
+     * @return $this
+     */
+    public function refresh()
+    {
+        if (!$this->exists) {
+            return $this;
+        }
+
+        $query = $this->newBaseQueryBuilder();
+
+        $query->flushQueryCacheWithTag(
+            $this->getCacheTagForFind()
+        );
+
+        $this->setRawAttributes(
+            $query->find(
+                $this->getKey()
+            )
+        );
+
+        $this->syncOriginal();
+
+        return $this;
+    }
+
+    /**
      * Perform a model insert operation.
      *
      * @return bool
@@ -540,13 +610,11 @@ abstract class Model extends BaseModel
         return $this->original['__key__'] ?? $this->getKey();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function newBaseQueryBuilder()
+    // {@inheritdoc}
+    /* protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
 
         return new QueryBuilder($connection);
-    }
+    } */
 }

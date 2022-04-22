@@ -13,6 +13,8 @@
      * [Associated model](Models/Order.php)
 * Real world-ish [Basket example](Http/Controllers/BasketController.php)
      * [Associated model](Models/Basket.php)
+* Example of model caching within a request: [Cached Basket](Http/Controllers/BasketCachedController.php)
+     * [Associated model](Models/BasketCached.php)
 
 ### User Generated `string` Primary Key
 
