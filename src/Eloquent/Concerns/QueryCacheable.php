@@ -50,11 +50,11 @@ trait QueryCacheable
      * Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
      *  this is designed for use mainly with the `array` cache driver for inside a single request.
      */
-    public function recacheFetchQuery()
+    public function recacheFindQuery()
     {
         return $this->newModelQuery()->cacheTags([
             $this->getCacheTagForFind(),
-        ])->recacheFetchQuery($this->id, $this->attributes);
+        ])->recacheFindQuery($this->id, $this->attributes);
     }
 
     /**

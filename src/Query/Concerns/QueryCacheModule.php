@@ -27,7 +27,7 @@ trait QueryCacheModule
             $this->columns = $columns;
         }
 
-        $key      = $this->getCacheKey($method, $id instanceof Key ? serialize($id) : $id);
+        $key      = $this->getCacheKey($method, $id instanceof Key ? ($id->path()[0]['name'] ?? $id->path()[0]['id'] ?? throw new \LogicException('invalid key')) : $id);
         $cache    = $this->getCache();
         $callback = $this->getQueryCacheCallback($method, $columns, $id);
         $time     = $this->getCacheFor();
@@ -73,16 +73,16 @@ trait QueryCacheModule
     }
 
     /**
-     * Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
+     * Re-cache the model for a find($id) query, so we don't have to go back to the DB for it.
      *  this is designed for use mainly with the `array` cache driver for inside a single request.
      */
-    public function recacheFetchQuery(string $id, array $attributes)
+    public function recacheFindQuery(string $id, array $attributes)
     {
         if (null === $this->columns) {
             $this->columns = ['*'];
         }
 
-        $key   = $this->getCacheKey('fetch', $id);
+        $key   = $this->getCacheKey('find', $id);
         $cache = $this->getCache();
 
         $callback = fn () => $attributes;
