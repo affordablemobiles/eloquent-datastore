@@ -8,8 +8,8 @@ use A1comms\EloquentDatastore\Concerns\BuildsQueries;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
-use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Rennokki\QueryCache\Contracts\QueryCacheModuleInterface;
 
 class Builder extends BaseBuilder implements QueryCacheModuleInterface
