@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace A1comms\EloquentDatastore\Eloquent;
 
 use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
+use Carbon\CarbonInterval;
 use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
@@ -15,6 +16,13 @@ abstract class Model extends BaseModel
     use Concerns\HasRelationships;
     use Concerns\QueriesRelationships;
     use Concerns\QueryCacheable;
+
+    /**
+     * The name of the "expire at" column.
+     *
+     * @var null|string
+     */
+    public const EXPIRE_AT = 'expire_at';
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -59,6 +67,13 @@ abstract class Model extends BaseModel
      * @var string
      */
     protected $excludeFromIndexes = [];
+
+    /**
+     * A list of attributes to exclude from the default indexing strategy.
+     *
+     * @var null|CarbonInterval
+     */
+    protected $expireAfter;
 
     /**
      * The primary key for the datastore should be "id".
@@ -467,6 +482,50 @@ abstract class Model extends BaseModel
         $this->syncOriginal();
 
         return $this;
+    }
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return $this
+     */
+    public function updateTimestamps()
+    {
+        if (null !== $this->expireAfter && $this->expireAfter instanceof CarbonInterval) {
+            $time = $this->freshTimestamp()->add($this->expireAfter);
+
+            $expireAtColumn = $this->getExpireAtColumn();
+
+            if (null !== $expireAtColumn && !$this->isDirty($expireAtColumn)) {
+                $this->setExpireAt($time);
+            }
+        }
+
+        return parent::updateTimestamps();
+    }
+
+    /**
+     * Set the value of the "expire at" attribute.
+     *
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function setExpireAt($value)
+    {
+        $this->{$this->getExpireAtColumn()} = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get the name of the "expire at" column.
+     *
+     * @return null|string
+     */
+    public function getExpireAtColumn()
+    {
+        return static::EXPIRE_AT;
     }
 
     /**
