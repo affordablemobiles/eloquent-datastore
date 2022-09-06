@@ -69,13 +69,6 @@ abstract class Model extends BaseModel
     protected $excludeFromIndexes = [];
 
     /**
-     * A list of attributes to exclude from the default indexing strategy.
-     *
-     * @var null|CarbonInterval
-     */
-    protected $expireAfter;
-
-    /**
      * The primary key for the datastore should be "id".
      *
      * @var string
@@ -491,8 +484,10 @@ abstract class Model extends BaseModel
      */
     public function updateTimestamps()
     {
-        if (null !== $this->expireAfter && $this->expireAfter instanceof CarbonInterval) {
-            $time = $this->freshTimestamp()->add($this->expireAfter);
+        $expireAfter = $this->getExpireAfterInterval();
+
+        if (null !== $expireAfter && $expireAfter instanceof CarbonInterval) {
+            $time = $this->freshTimestamp()->add($expireAfter);
 
             $expireAtColumn = $this->getExpireAtColumn();
 
@@ -516,6 +511,16 @@ abstract class Model extends BaseModel
         $this->{$this->getExpireAtColumn()} = $value;
 
         return $this;
+    }
+
+    /**
+     * Get the expiry interval for the record.
+     *
+     * @return null|CarbonInterval
+     */
+    public function getExpireAfterInterval()
+    {
+        return null;
     }
 
     /**
