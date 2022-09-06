@@ -419,7 +419,10 @@ abstract class Model extends BaseModel
     public function getQueryOptions(): array
     {
         return [
-            'excludeFromIndexes' => $this->excludeFromIndexes,
+            'excludeFromIndexes' => [
+                ...$this->excludeFromIndexes,
+                $this->getExpireAtColumn(),
+            ],
         ];
     }
 
