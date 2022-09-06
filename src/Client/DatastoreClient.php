@@ -32,9 +32,9 @@ class DatastoreClient extends BaseDatastoreClient
      * @param EntityInterface $entity  the entity to be inserted
      * @param array           $options [optional] Configuration options
      *
-     * @throws DomainException if a conflict occurs, fail
-     *
      * @return Key
+     *
+     * @throws DomainException if a conflict occurs, fail
      */
     public function insert(EntityInterface $entity, array $options = [])
     {
@@ -113,9 +113,9 @@ class DatastoreClient extends BaseDatastoreClient
      *           lookup or query. **Defaults to** `false`.
      * }
      *
-     * @throws DomainException if a conflict occurs, fail
-     *
      * @return Key
+     *
+     * @throws DomainException if a conflict occurs, fail
      */
     public function update(EntityInterface $entity, array $options = [])
     {
@@ -194,9 +194,9 @@ class DatastoreClient extends BaseDatastoreClient
      * @param EntityInterface $entity  the entity to be upserted
      * @param array           $options [optional] Configuration Options
      *
-     * @throws DomainException if a conflict occurs, fail
-     *
      * @return Key The entity key
+     *
+     * @throws DomainException if a conflict occurs, fail
      */
     public function upsert(EntityInterface $entity, array $options = [])
     {

@@ -51,9 +51,9 @@ trait BuildsQueries
      *
      * @param int $chunkSize
      *
-     * @throws \InvalidArgumentException
-     *
      * @return \Illuminate\Support\LazyCollection
+     *
+     * @throws \InvalidArgumentException
      */
     public function lazy($chunkSize = 150)
     {

@@ -37,9 +37,9 @@ class Cursor implements Arrayable
     /**
      * Get the given parameter from the cursor.
      *
-     * @throws \UnexpectedValueException
-     *
      * @return null|string
+     *
+     * @throws \UnexpectedValueException
      */
     public function parameter(string $parameterName)
     {

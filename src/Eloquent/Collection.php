@@ -64,7 +64,7 @@ class Collection extends BaseCollection
             if (empty($entities[$index])) {
                 ++$empty;
             } else {
-                $id = $resultKeys[($index - $empty)]->pathEndIdentifier();
+                $id = $resultKeys[$index - $empty]->pathEndIdentifier();
             }
 
             $entity->finishBulkUpsert($id);
