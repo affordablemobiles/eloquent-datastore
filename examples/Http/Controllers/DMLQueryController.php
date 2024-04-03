@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use A1comms\EloquentDatastore\Eloquent\Collection;
+use AffordableMobiles\EloquentDatastore\Eloquent\Collection;
 use App\Models\People;
 use Illuminate\Support\Facades\DB;
 

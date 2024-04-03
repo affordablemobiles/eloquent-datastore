@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore;
+namespace AffordableMobiles\EloquentDatastore;
 
-use A1comms\EloquentDatastore\Client\DatastoreClient;
-use A1comms\EloquentDatastore\Query\Builder;
-use A1comms\EloquentDatastore\Query\Grammar;
-use A1comms\EloquentDatastore\Query\Processor;
-use A1comms\EloquentDatastore\Query\RawExpression;
+use AffordableMobiles\EloquentDatastore\Client\DatastoreClient;
+use AffordableMobiles\EloquentDatastore\Query\Builder;
+use AffordableMobiles\EloquentDatastore\Query\Grammar;
+use AffordableMobiles\EloquentDatastore\Query\Processor;
+use AffordableMobiles\EloquentDatastore\Query\RawExpression;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Traits\ForwardsCalls;
 
@@ -57,9 +57,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Call datastore client methods.
-     *
-     * @param $name
-     * @param $arguments
      */
     public function __call($name, $arguments): void
     {
@@ -68,8 +65,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Make datastore client.
-     *
-     * @param $config
      */
     public function makeClient($config): self
     {
@@ -90,8 +85,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Set the table.
-     *
-     * @param $table
      */
     public function from($table): Builder
     {
@@ -125,8 +118,6 @@ class DatastoreConnection extends Connection
     /**
      * Set the datastore client.
      *
-     * @param $client
-     *
      * @return $this
      */
     public function setClient($client): self
@@ -149,8 +140,6 @@ class DatastoreConnection extends Connection
 
     /**
      * Set the table/kind name.
-     *
-     * @param $kind
      */
     public function kind($kind): Builder
     {
@@ -165,9 +154,6 @@ class DatastoreConnection extends Connection
         return new RawExpression($value);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function disconnect(): void
     {
         $this->setClient(null);

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent\Concerns;
-
-use Closure;
+namespace AffordableMobiles\EloquentDatastore\Eloquent\Concerns;
 
 trait QueriesRelationships
 {
@@ -16,7 +14,7 @@ trait QueriesRelationships
      * @param mixed $count
      * @param mixed $boolean
      */
-    public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
+    public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
     {
         throw new \LogicException('Not Implemented');
 
@@ -32,7 +30,7 @@ trait QueriesRelationships
      * @param mixed $count
      * @param mixed $boolean
      */
-    public function hasMorph($relation, $types, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
+    public function hasMorph($relation, $types, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
     {
         throw new \LogicException('Not Implemented');
 

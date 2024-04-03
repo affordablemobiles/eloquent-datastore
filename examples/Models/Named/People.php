@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Named;
 
-use A1comms\EloquentDatastore\Eloquent\Model;
+use AffordableMobiles\EloquentDatastore\Eloquent\Model;
 
 class People extends Model
 {

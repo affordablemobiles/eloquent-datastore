@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent;
+namespace AffordableMobiles\EloquentDatastore\Eloquent;
 
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
-use LogicException;
 
 class Collection extends BaseCollection
 {
@@ -41,14 +40,14 @@ class Collection extends BaseCollection
         $model = $this->prepareBulkQuery();
 
         // Prepare the models for update...
-        $entities = $this->map(fn ($entity) => $entity->prepareBulkUpsert())->toArray();
+        $entities = $this->map(static fn ($entity) => $entity->prepareBulkUpsert())->toArray();
 
         // Remove any empty entries (not dirty)...
         $rEntities = array_filter($entities);
 
         $resultKeys = $model->newQueryWithoutScopes()->_upsert(
-            array_map(fn ($entity) => $entity['attributes'], $rEntities),
-            array_map(fn ($entity) => $entity['key'], $rEntities),
+            array_map(static fn ($entity) => $entity['attributes'], $rEntities),
+            array_map(static fn ($entity) => $entity['key'], $rEntities),
             $model->getQueryOptions(),
         );
 
@@ -58,7 +57,7 @@ class Collection extends BaseCollection
         // This looks complicated as the array of records we actually upserted
         //  in the query might not match our source collection (shorter array length),
         //  as we're only inserting ones that are dirty.
-        $this->map(function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
+        $this->map(static function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
             $id = null;
 
             if (empty($entities[$index])) {
@@ -101,14 +100,14 @@ class Collection extends BaseCollection
         $model = $this->first();
 
         if (!$model) {
-            throw new LogicException('Unable to create query for empty collection.');
+            throw new \LogicException('Unable to create query for empty collection.');
         }
 
         $class = $model::class;
 
-        $this->each(function ($item) use ($class): void {
+        $this->each(static function ($item) use ($class): void {
             if (!$item instanceof $class) {
-                throw new LogicException('Unable to create query for collection with mixed types.');
+                throw new \LogicException('Unable to create query for collection with mixed types.');
             }
         });
 

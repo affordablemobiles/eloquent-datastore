@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Query;
+namespace AffordableMobiles\EloquentDatastore\Query;
 
 class RawExpression
 {

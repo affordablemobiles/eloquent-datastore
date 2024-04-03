@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Relations;
+namespace AffordableMobiles\EloquentDatastore\Relations;
 
-use A1comms\EloquentDatastore\Eloquent\Model;
+use AffordableMobiles\EloquentDatastore\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -67,7 +67,7 @@ class HasManyDescendants extends Relation
      */
     public function updateOrCreate(array $attributes, array $values = [])
     {
-        return tap($this->firstOrNew($attributes), function ($instance) use ($values): void {
+        return tap($this->firstOrNew($attributes), static function ($instance) use ($values): void {
             $instance->fill($values);
 
             $instance->save();
@@ -140,7 +140,7 @@ class HasManyDescendants extends Relation
     /**
      * Create a Collection of new instances of the related model.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function createMany(iterable $records)
     {
@@ -170,7 +170,7 @@ class HasManyDescendants extends Relation
             $modelCollection = $this->getResults();
             // Touch the timestamps but don't
             // update anything individually...
-            $modelCollection->map(fn ($entity) => $entity->updateTimestamps());
+            $modelCollection->map(static fn ($entity) => $entity->updateTimestamps());
             // Perform a bulk upsert for better performance
             // on Datastore...
             $modelCollection->save();
@@ -266,7 +266,7 @@ class HasManyDescendants extends Relation
      *
      * @param array $columns
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function get($columns = ['*'])
     {

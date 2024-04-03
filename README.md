@@ -1,7 +1,7 @@
 # Laravel Eloquent for Google Datastore
 
-![Latest Stable Version](https://poser.pugx.org/a1comms/eloquent-datastore/v)
-![License](https://poser.pugx.org/a1comms/eloquent-datastore/license)
+![Latest Stable Version](https://poser.pugx.org/AffordableMobiles/eloquent-datastore/v)
+![License](https://poser.pugx.org/AffordableMobiles/eloquent-datastore/license)
 
 A package for using Google Datastore as a database driver.
 
@@ -15,7 +15,7 @@ By using this package, you can use `query builder` and `eloquent` to access data
 You can install the package via composer:
 
 ```bash
-composer require a1comms/eloquent-datastore
+composer require affordablemobiles/eloquent-datastore
 ```
 
 If you are using Laravel Package Auto-Discovery, you don't need you to manually add the ServiceProvider.
@@ -25,7 +25,7 @@ If you are using Laravel Package Auto-Discovery, you don't need you to manually 
 If you don't use auto-discovery, add the below ServiceProvider to the `$providers` array in `config/app.php` file.
 
 ```php
-A1comms\EloquentDatastore\DatastoreServiceProvider::class,
+AffordableMobiles\EloquentDatastore\DatastoreServiceProvider::class,
 ```
 
 ## Roadmap
@@ -59,7 +59,7 @@ You need to add `datastore` connection in `config/database.php` file.
 
 ### Access using Eloquent Model
 
-You need to extend `A1comms\EloquentDatastore\Eloquent\Model` class instead of Laravel's default Eloquent model class.
+You need to extend `AffordableMobiles\EloquentDatastore\Eloquent\Model` class instead of Laravel's default Eloquent model class.
 
 **Example-**
 ```php
@@ -67,7 +67,7 @@ You need to extend `A1comms\EloquentDatastore\Eloquent\Model` class instead of L
 
 namespace App\Models;
 
-use A1comms\EloquentDatastore\Eloquent\Model;
+use AffordableMobiles\EloquentDatastore\Eloquent\Model;
 
 class Project extends Model
 {

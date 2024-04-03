@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Concerns;
+namespace AffordableMobiles\EloquentDatastore\Concerns;
 
 use Illuminate\Support\LazyCollection;
 
@@ -51,7 +51,7 @@ trait BuildsQueries
      *
      * @param int $chunkSize
      *
-     * @return \Illuminate\Support\LazyCollection
+     * @return LazyCollection
      *
      * @throws \InvalidArgumentException
      */

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent\Concerns;
+namespace AffordableMobiles\EloquentDatastore\Eloquent\Concerns;
 
-use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
+use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Rennokki\QueryCache\Traits\QueryCacheable as ParentQueryCacheable;
 
 trait QueryCacheable
@@ -19,8 +20,8 @@ trait QueryCacheable
      * When invalidating automatically on update, you can specify
      * which tags to invalidate.
      *
-     * @param null|string                                   $relation
-     * @param null|\Illuminate\Database\Eloquent\Collection $pivotedModels
+     * @param null|string     $relation
+     * @param null|Collection $pivotedModels
      */
     public function getCacheTagsToInvalidateOnUpdate($relation = null, $pivotedModels = null): array
     {
@@ -69,9 +70,6 @@ trait QueryCacheable
         return FlushQueryCacheObserver::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();

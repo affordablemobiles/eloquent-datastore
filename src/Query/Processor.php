@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Query;
+namespace AffordableMobiles\EloquentDatastore\Query;
 
-use A1comms\EloquentDatastore\Collection;
+use AffordableMobiles\EloquentDatastore\Collection;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Query\Processors\Processor as BaseProcessor;
 
@@ -13,8 +13,6 @@ class Processor extends BaseProcessor
     /**
      * Process Datastore Results.
      *
-     * @param $builder
-     * @param $results
      * @param null|mixed $excludeKey
      *
      * @return mixed

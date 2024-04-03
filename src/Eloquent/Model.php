@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent;
+namespace AffordableMobiles\EloquentDatastore\Eloquent;
 
-use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
+use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
 use Carbon\CarbonInterval;
-use DateTimeInterface;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
@@ -82,9 +81,6 @@ abstract class Model extends BaseModel
      */
     protected $keyType = 'int';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getKey($id = false)
     {
         if ($id) {
@@ -212,7 +208,7 @@ abstract class Model extends BaseModel
      *
      * @param mixed $value
      */
-    public function fromDateTime($value): DateTimeInterface
+    public function fromDateTime($value): \DateTimeInterface
     {
         return empty($value) ? $value : $this->asDateTime($value);
     }
@@ -285,17 +281,11 @@ abstract class Model extends BaseModel
         return $saved;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function newCollection(array $models = [])
     {
         return new Collection($models);
@@ -617,7 +607,7 @@ abstract class Model extends BaseModel
     /**
      * Perform a model update operation.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param BaseBuilder $query
      *
      * @return bool
      */
@@ -656,9 +646,9 @@ abstract class Model extends BaseModel
     /**
      * Set the keys for a select query.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param BaseBuilder $query
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return BaseBuilder
      */
     protected function setKeysForSelectQuery($query)
     {

@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore;
+namespace AffordableMobiles\EloquentDatastore;
 
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
-use LogicException;
 
 class Collection extends BaseCollection
 {
@@ -26,9 +25,9 @@ class Collection extends BaseCollection
      */
     public function delete()
     {
-        $this->each(function ($item): void {
+        $this->each(static function ($item): void {
             if (empty($item->__key__)) {
-                throw new LogicException('Unable to create query for collection with mixed types.');
+                throw new \LogicException('Unable to create query for collection with mixed types.');
             }
         });
 

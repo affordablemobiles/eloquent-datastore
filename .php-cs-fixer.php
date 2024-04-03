@@ -1,18 +1,20 @@
 <?php
 
 declare(strict_types=1);
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
 
-$finder = PhpCsFixer\Finder::create()
+$finder = Finder::create()
     ->ignoreDotFiles(false)
     ->ignoreVCSIgnored(true)
     ->in(__DIR__)
 ;
 
-$config = new PhpCsFixer\Config();
+$config = new Config();
 $config
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PHP81Migration'        => true,
+        '@PHP83Migration'        => true,
         '@PHP80Migration:risky'  => true,
         'heredoc_indentation'    => false,
         '@PhpCsFixer'            => true,

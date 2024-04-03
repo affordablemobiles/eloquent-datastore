@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Query;
+namespace AffordableMobiles\EloquentDatastore\Query;
 
-use A1comms\EloquentDatastore\Concerns\BuildsQueries;
+use AffordableMobiles\EloquentDatastore\Concerns\BuildsQueries;
+use Google\Cloud\Datastore\DatastoreClient;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use Rennokki\QueryCache\Contracts\QueryCacheModuleInterface;
 
 class Builder extends BaseBuilder implements QueryCacheModuleInterface
@@ -34,10 +34,7 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
     protected $ancestor = false;
     protected $namespaceId;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct(ConnectionInterface $connection, Grammar $grammar = null, Processor $processor = null)
+    public function __construct(ConnectionInterface $connection, ?Grammar $grammar = null, ?Processor $processor = null)
     {
         $this->connection = $connection;
         // $this->expression = new Expression();
@@ -46,7 +43,7 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
     }
 
     /**
-     * @return \Google\Cloud\Datastore\DatastoreClient
+     * @return DatastoreClient
      */
     public function getClient()
     {
@@ -56,14 +53,13 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
     /**
      * Add an "order by" clause to the query.
      *
-     * @param
      * @param string $direction
      * @param mixed  $column
      */
     public function orderBy($column, $direction = 'asc'): self
     {
         if (!\in_array($direction, ['asc', 'desc'], true)) {
-            throw new InvalidArgumentException('Order direction must be "asc" or "desc".');
+            throw new \InvalidArgumentException('Order direction must be "asc" or "desc".');
         }
 
         $this->orders[] = [

@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Query\Concerns;
+namespace AffordableMobiles\EloquentDatastore\Query\Concerns;
 
-use A1comms\EloquentDatastore\Client\DatastoreClient;
-use A1comms\EloquentDatastore\Collection;
-use Closure;
+use AffordableMobiles\EloquentDatastore\Client\DatastoreClient;
+use AffordableMobiles\EloquentDatastore\Collection;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Pagination\Cursor;
 use Illuminate\Support\Arr;
+use Illuminate\Support\LazyCollection;
 
 trait QueriesDatastore
 {
@@ -51,9 +53,6 @@ trait QueriesDatastore
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function get($columns = ['*'])
     {
         return $this->onceWithColumns(Arr::wrap($columns), function () {
@@ -155,9 +154,6 @@ trait QueriesDatastore
         return $this->keys();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function delete($key = null)
     {
         if (null === $key) {
@@ -177,9 +173,6 @@ trait QueriesDatastore
         return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'deleteBatch'], [$keys]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function insert(array $values, $options = [])
     {
         if (empty($this->from)) {
@@ -316,12 +309,12 @@ trait QueriesDatastore
      *
      * This is more efficient on larger data-sets, etc.
      *
-     * @param null|int                                  $perPage
-     * @param array                                     $columns
-     * @param string                                    $cursorName
-     * @param null|\Illuminate\Pagination\Cursor|string $cursor
+     * @param null|int           $perPage
+     * @param array              $columns
+     * @param string             $cursorName
+     * @param null|Cursor|string $cursor
      *
-     * @return \Illuminate\Contracts\Pagination\CursorPaginator
+     * @return CursorPaginator
      */
     public function cursorPaginate($perPage = 15, $columns = ['*'], $cursorName = 'cursor', $cursor = null)
     {
@@ -331,7 +324,7 @@ trait QueriesDatastore
     /**
      * Get a lazy collection for the given query.
      *
-     * @return \Illuminate\Support\LazyCollection
+     * @return LazyCollection
      */
     public function cursor()
     {
@@ -371,7 +364,7 @@ trait QueriesDatastore
      *
      * @return $this
      */
-    public function whereNested(Closure $callback, $boolean = 'and')
+    public function whereNested(\Closure $callback, $boolean = 'and')
     {
         $callback($this);
 
@@ -721,28 +714,28 @@ trait QueriesDatastore
         return false;
     }
 
-    public function whereExists(Closure $callback, $boolean = 'and', $not = false)
+    public function whereExists(\Closure $callback, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function orWhereExists(Closure $callback, $not = false)
+    public function orWhereExists(\Closure $callback, $not = false)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function whereNotExists(Closure $callback, $boolean = 'and')
+    public function whereNotExists(\Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function orWhereNotExists(Closure $callback)
+    public function orWhereNotExists(\Closure $callback)
     {
         throw new \LogicException('Not Implemented');
 
@@ -861,7 +854,7 @@ trait QueriesDatastore
         return false;
     }
 
-    public function havingNested(Closure $callback, $boolean = 'and')
+    public function havingNested(\Closure $callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
 
@@ -987,14 +980,14 @@ trait QueriesDatastore
         return false;
     }
 
-    public function existsOr(Closure $callback)
+    public function existsOr(\Closure $callback)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function doesntExistOr(Closure $callback)
+    public function doesntExistOr(\Closure $callback)
     {
         throw new \LogicException('Not Implemented');
 

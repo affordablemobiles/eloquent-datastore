@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent;
+namespace AffordableMobiles\EloquentDatastore\Eloquent;
 
-use A1comms\EloquentDatastore\Concerns\BuildsQueries;
-use A1comms\EloquentDatastore\Query\Builder as QueryBuilder;
+use AffordableMobiles\EloquentDatastore\Concerns\BuildsQueries;
+use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
+use Google\Cloud\Datastore\DatastoreClient;
 use Google\Cloud\Datastore\Key;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class Builder extends EloquentBuilder
@@ -25,7 +28,7 @@ class Builder extends EloquentBuilder
     /**
      * Get Datastore Connection.
      *
-     * @return \Illuminate\Database\ConnectionInterface
+     * @return ConnectionInterface
      */
     public function getConnection()
     {
@@ -35,7 +38,7 @@ class Builder extends EloquentBuilder
     /**
      * Get Datastore client.
      *
-     * @return \Google\Cloud\Datastore\DatastoreClient
+     * @return DatastoreClient
      */
     public function getClient()
     {
@@ -66,9 +69,6 @@ class Builder extends EloquentBuilder
         return $this->query->lastCursor();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function find($id, $columns = [])
     {
         $result = $this->query->cacheTags([
@@ -93,7 +93,7 @@ class Builder extends EloquentBuilder
      * @param array|\Illuminate\Contracts\Support\Arrayable $ids
      * @param array                                         $columns
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function findMany($ids, $columns = ['*'])
     {
@@ -140,7 +140,7 @@ class Builder extends EloquentBuilder
     /**
      * Get the first record matching the attributes or instantiate it.
      *
-     * @return \Illuminate\Database\Eloquent\Model|static
+     * @return Model|static
      */
     public function firstOrNew(array $attributes = [], array $values = [])
     {
@@ -154,7 +154,7 @@ class Builder extends EloquentBuilder
     /**
      * Get the first record matching the attributes or create it.
      *
-     * @return \Illuminate\Database\Eloquent\Model|static
+     * @return Model|static
      */
     public function firstOrCreate(array $attributes = [], array $values = [])
     {
@@ -162,7 +162,7 @@ class Builder extends EloquentBuilder
             return $instance;
         }
 
-        return tap($this->newModelInstance(array_merge($attributes, $values)), function ($instance): void {
+        return tap($this->newModelInstance(array_merge($attributes, $values)), static function ($instance): void {
             $instance->save();
         });
     }

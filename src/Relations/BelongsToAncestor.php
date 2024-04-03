@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Relations;
+namespace AffordableMobiles\EloquentDatastore\Relations;
 
-use A1comms\EloquentDatastore\Eloquent\Model;
+use AffordableMobiles\EloquentDatastore\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -16,7 +16,7 @@ class BelongsToAncestor extends Relation
      *
      * @param array $columns
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function get($columns = ['*'])
     {
@@ -119,7 +119,7 @@ class BelongsToAncestor extends Relation
     /**
      * Create a Collection of new instances of the related model.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function createMany(iterable $records)
     {
@@ -207,8 +207,6 @@ class BelongsToAncestor extends Relation
 
     /**
      * Get the results of the relationship.
-     *
-     * @param mixed $columns
      *
      * @return mixed
      */

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Client;
+namespace AffordableMobiles\EloquentDatastore\Client;
 
-use DomainException;
 use Google\Cloud\Datastore\DatastoreClient as BaseDatastoreClient;
 use Google\Cloud\Datastore\EntityInterface;
 use Google\Cloud\Datastore\Key;
@@ -34,7 +33,7 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @return Key
      *
-     * @throws DomainException if a conflict occurs, fail
+     * @throws \DomainException if a conflict occurs, fail
      */
     public function insert(EntityInterface $entity, array $options = [])
     {
@@ -103,7 +102,7 @@ class DatastoreClient extends BaseDatastoreClient
      * @param array           $options [optional] {
      *                                 Configuration Options
      *
-     *     @var bool $allowOverwrite Entities must be updated as an entire
+     * @var bool $allowOverwrite Entities must be updated as an entire
      *           resource. Patch operations are not supported. Because entities
      *           can be created manually, or obtained by a lookup or query, it
      *           is possible to accidentally overwrite an existing record with a
@@ -111,11 +110,11 @@ class DatastoreClient extends BaseDatastoreClient
      *           safety, this flag must be set to `true` in order to update a
      *           record when the entity provided was not obtained through a
      *           lookup or query. **Defaults to** `false`.
-     * }
+     *           }
      *
      * @return Key
      *
-     * @throws DomainException if a conflict occurs, fail
+     * @throws \DomainException if a conflict occurs, fail
      */
     public function update(EntityInterface $entity, array $options = [])
     {
@@ -146,7 +145,7 @@ class DatastoreClient extends BaseDatastoreClient
      * @param array             $options  [optional] {
      *                                    Configuration Options
      *
-     *     @var bool $allowOverwrite Entities must be updated as an entire
+     * @var bool $allowOverwrite Entities must be updated as an entire
      *           resource. Patch operations are not supported. Because entities
      *           can be created manually, or obtained by a lookup or query, it
      *           is possible to accidentally overwrite an existing record with a
@@ -154,7 +153,7 @@ class DatastoreClient extends BaseDatastoreClient
      *           safety, this flag must be set to `true` in order to update a
      *           record when the entity provided was not obtained through a
      *           lookup or query. **Defaults to** `false`.
-     * }
+     *           }
      *
      * @return Key[]
      */
@@ -196,7 +195,7 @@ class DatastoreClient extends BaseDatastoreClient
      *
      * @return Key The entity key
      *
-     * @throws DomainException if a conflict occurs, fail
+     * @throws \DomainException if a conflict occurs, fail
      */
     public function upsert(EntityInterface $entity, array $options = [])
     {

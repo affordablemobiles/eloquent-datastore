@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Pagination;
+namespace AffordableMobiles\EloquentDatastore\Pagination;
 
 use Illuminate\Contracts\Support\Arrayable;
-use UnexpectedValueException;
 
 class Cursor implements Arrayable
 {
@@ -44,7 +43,7 @@ class Cursor implements Arrayable
     public function parameter(string $parameterName)
     {
         if (!\array_key_exists($parameterName, $this->parameters)) {
-            throw new UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
+            throw new \UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
         }
 
         return $this->parameters[$parameterName];

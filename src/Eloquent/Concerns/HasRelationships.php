@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Eloquent\Concerns;
+namespace AffordableMobiles\EloquentDatastore\Eloquent\Concerns;
 
-use A1comms\EloquentDatastore\Relations\BelongsToAncestor;
-use A1comms\EloquentDatastore\Relations\HasManyDescendants;
+use AffordableMobiles\EloquentDatastore\Relations\BelongsToAncestor;
+use AffordableMobiles\EloquentDatastore\Relations\HasManyDescendants;
 
 trait HasRelationships
 {
@@ -21,8 +21,6 @@ trait HasRelationships
 
     /**
      * Define an inverse one-to-one or many relationship.
-     *
-     * @param null|string $relation
      */
     public function belongsToAncestor(string $related): BelongsToAncestor
     {

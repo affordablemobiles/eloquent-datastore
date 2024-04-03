@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace A1comms\EloquentDatastore\Query\Concerns;
+namespace AffordableMobiles\EloquentDatastore\Query\Concerns;
 
 use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Arr;
@@ -21,7 +21,7 @@ trait QueryCacheModule
      *
      * @return array
      */
-    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], string|Key $id = null)
+    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], null|Key|string $id = null)
     {
         if (null === $this->columns) {
             $this->columns = $columns;
@@ -47,7 +47,7 @@ trait QueryCacheModule
      *
      * @return \Closure
      */
-    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], string|Key $id = null)
+    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], null|Key|string $id = null)
     {
         return function () use ($method, $columns, $id) {
             $this->avoidCache = true;
@@ -85,7 +85,7 @@ trait QueryCacheModule
         $key   = $this->getCacheKey('find', $id);
         $cache = $this->getCache();
 
-        $callback = fn () => $attributes;
+        $callback = static fn () => $attributes;
 
         $time = $this->getCacheFor();
 
@@ -99,7 +99,7 @@ trait QueryCacheModule
     /**
      * Generate the plain unique cache key for the query.
      */
-    public function generatePlainCacheKey(string $method = 'get', string $id = null, string $appends = null): string
+    public function generatePlainCacheKey(string $method = 'get', ?string $id = null, ?string $appends = null): string
     {
         $name = $this->connection->getName();
 

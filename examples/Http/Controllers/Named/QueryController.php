@@ -134,7 +134,7 @@ class QueryController extends Controller
 
         // Process all records returned by a query using a closure,
         //  in pages / chunks, specifying a chunk size of 2 entities at a time.
-        People::where('last_name', 'Melrose')->chunk(self::CHUNK_SIZE, function ($results, $page) use (&$arr): void {
+        People::where('last_name', 'Melrose')->chunk(self::CHUNK_SIZE, static function ($results, $page) use (&$arr): void {
             foreach ($results as $result) {
                 $arr[] = [
                     'first_name' => $result->first_name,
@@ -154,7 +154,7 @@ class QueryController extends Controller
         // Process all records returned by a query using a closure,
         //  fetched from the DB as chunks of 2 entities at a time,
         //  handled by our closure one record at a time.
-        People::where('last_name', 'Melrose')->each(function ($result) use (&$arr): void {
+        People::where('last_name', 'Melrose')->each(static function ($result) use (&$arr): void {
             $arr[] = [
                 'first_name' => $result->first_name,
                 'last_name'  => $result->last_name,
