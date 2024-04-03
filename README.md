@@ -1,7 +1,7 @@
 # Laravel Eloquent for Google Datastore
 
-![Latest Stable Version](https://poser.pugx.org/AffordableMobiles/eloquent-datastore/v)
-![License](https://poser.pugx.org/AffordableMobiles/eloquent-datastore/license)
+![Latest Stable Version](https://poser.pugx.org/affordablemobiles/eloquent-datastore/v)
+![License](https://poser.pugx.org/affordablemobiles/eloquent-datastore/license)
 
 A package for using Google Datastore as a database driver.
 
