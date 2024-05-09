@@ -364,7 +364,7 @@ trait QueriesDatastore
      *
      * @return $this
      */
-    public function whereNested(\Closure $callback, $boolean = 'and')
+    public function whereNested($callback, $boolean = 'and')
     {
         $callback($this);
 
@@ -714,28 +714,28 @@ trait QueriesDatastore
         return false;
     }
 
-    public function whereExists(\Closure $callback, $boolean = 'and', $not = false)
+    public function whereExists($callback, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function orWhereExists(\Closure $callback, $not = false)
+    public function orWhereExists($callback, $not = false)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function whereNotExists(\Closure $callback, $boolean = 'and')
+    public function whereNotExists($callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function orWhereNotExists(\Closure $callback)
+    public function orWhereNotExists($callback)
     {
         throw new \LogicException('Not Implemented');
 
@@ -854,7 +854,7 @@ trait QueriesDatastore
         return false;
     }
 
-    public function havingNested(\Closure $callback, $boolean = 'and')
+    public function havingNested($callback, $boolean = 'and')
     {
         throw new \LogicException('Not Implemented');
 
@@ -896,7 +896,7 @@ trait QueriesDatastore
         return false;
     }
 
-    public function havingBetween($column, array $values, $boolean = 'and', $not = false)
+    public function havingBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         throw new \LogicException('Not Implemented');
 
@@ -980,14 +980,14 @@ trait QueriesDatastore
         return false;
     }
 
-    public function existsOr(\Closure $callback)
+    public function existsOr($callback)
     {
         throw new \LogicException('Not Implemented');
 
         return false;
     }
 
-    public function doesntExistOr(\Closure $callback)
+    public function doesntExistOr($callback)
     {
         throw new \LogicException('Not Implemented');
 
