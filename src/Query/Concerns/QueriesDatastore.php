@@ -361,6 +361,7 @@ trait QueriesDatastore
      *  so we'll just add them as standard WHERE conditions.
      *
      * @param string $boolean
+     * @param mixed  $callback
      *
      * @return $this
      */

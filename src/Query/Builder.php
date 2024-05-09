@@ -129,6 +129,7 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
      * @param mixed      $columns
      * @param mixed      $pageName
      * @param null|mixed $page
+     * @param null|mixed $total
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null)
     {
