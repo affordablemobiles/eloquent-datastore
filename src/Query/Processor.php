@@ -14,6 +14,8 @@ class Processor extends BaseProcessor
      * Process Datastore Results.
      *
      * @param null|mixed $excludeKey
+     * @param mixed      $builder
+     * @param mixed      $results
      *
      * @return mixed
      */

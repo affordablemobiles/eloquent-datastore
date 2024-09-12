@@ -57,6 +57,9 @@ class DatastoreConnection extends Connection
 
     /**
      * Call datastore client methods.
+     *
+     * @param mixed $name
+     * @param mixed $arguments
      */
     public function __call($name, $arguments): void
     {
@@ -65,6 +68,8 @@ class DatastoreConnection extends Connection
 
     /**
      * Make datastore client.
+     *
+     * @param mixed $config
      */
     public function makeClient($config): self
     {
@@ -85,6 +90,8 @@ class DatastoreConnection extends Connection
 
     /**
      * Set the table.
+     *
+     * @param mixed $table
      */
     public function from($table): Builder
     {
@@ -118,6 +125,8 @@ class DatastoreConnection extends Connection
     /**
      * Set the datastore client.
      *
+     * @param mixed $client
+     *
      * @return $this
      */
     public function setClient($client): self
@@ -140,6 +149,8 @@ class DatastoreConnection extends Connection
 
     /**
      * Set the table/kind name.
+     *
+     * @param mixed $kind
      */
     public function kind($kind): Builder
     {

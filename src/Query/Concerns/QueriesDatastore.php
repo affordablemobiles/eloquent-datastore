@@ -1072,7 +1072,7 @@ trait QueriesDatastore
         return false;
     }
 
-    public function updateOrInsert(array $attributes, array $values = [])
+    public function updateOrInsert(array $attributes, array|callable $values = [])
     {
         throw new \LogicException('Not Implemented');
 
