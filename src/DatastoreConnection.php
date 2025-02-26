@@ -6,7 +6,7 @@ namespace AffordableMobiles\EloquentDatastore;
 
 use AffordableMobiles\EloquentDatastore\Client\DatastoreClient;
 use AffordableMobiles\EloquentDatastore\Query\Builder;
-use AffordableMobiles\EloquentDatastore\Query\Grammar;
+use AffordableMobiles\EloquentDatastore\Query\Grammar as QueryGrammar;
 use AffordableMobiles\EloquentDatastore\Query\Processor;
 use AffordableMobiles\EloquentDatastore\Query\RawExpression;
 use Illuminate\Database\Connection;
@@ -99,11 +99,23 @@ class DatastoreConnection extends Connection
     }
 
     /**
-     * Get default query grammar.
+     * Set the query grammar to the default implementation.
+     *
+     * @return void
      */
-    public function getDefaultQueryGrammar()
+    public function useDefaultQueryGrammar()
     {
-        return $this->withTablePrefix(new Grammar());
+        $this->queryGrammar = $this->getDefaultQueryGrammar();
+    }
+
+    /**
+     * Get the default query grammar instance.
+     *
+     * @return \Illuminate\Database\Query\Grammars\Grammar
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return new QueryGrammar($this);
     }
 
     /**
