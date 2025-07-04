@@ -8,6 +8,7 @@ use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
 use Carbon\CarbonInterval;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
+use Illuminate\Database\Eloquent\MissingAttributeException;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
@@ -569,15 +570,11 @@ abstract class Model extends BaseModel
                 return true;
             }
 
-            $query->insert(
-                array_merge(
-                    [
-                        '__key__' => $this->getKey(),
-                    ],
-                    $attributes
-                ),
-                $this->getQueryOptions()
-            );
+            if (empty($attributes['id'])) {
+                throw new MissingAttributeException($this, 'id');
+            }
+
+            $query->insert($attributes, $this->getQueryOptions());
         }
 
         // We will go ahead and set the exists property to true, so that it is set when
