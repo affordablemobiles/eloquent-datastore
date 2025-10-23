@@ -171,11 +171,128 @@ class Builder extends EloquentBuilder
         });
     }
 
+    /**
+     * Add a basic where clause to the query.
+     *
+     * @param array|\Closure|string $column
+     * @param mixed                 $operator
+     * @param mixed                 $value
+     * @param string                $boolean
+     *
+     * @return $this
+     */
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // Get the model's primary key name (e.g., 'id' or 'uuid')
+        $keyName = $this->model->getKeyName();
+
+        // Case 1: where(['uuid' => '123', 'name' => 'John'])
+        if (\is_array($column)) {
+            foreach ($column as $key => $val) {
+                if ($key === $keyName) {
+                    // Remap this part of the array query
+                    $this->whereKey($val, $boolean);
+                    unset($column[$keyName]);
+                }
+            }
+
+            // Let the parent handle the rest of the array (e.g., 'name' => 'John')
+            return parent::where($column, $operator, $value, $boolean);
+        }
+
+        // Case 2: where('uuid', '123') or where('uuid', '=', '123')
+        if (\is_string($column) && $column === $keyName) {
+            // We have a query for the primary key.
+            // We must convert it to a '__key__' query.
+            [$value, $operator] = $this->query->prepareValueAndOperator(
+                $value,
+                $operator,
+                2 === \func_num_args()
+            );
+
+            // Build the full Datastore Key for the query
+            $datastoreKey = $this->model->getKey($value);
+
+            $this->query->where('__key__', $operator, $datastoreKey, $boolean);
+
+            return $this;
+        }
+
+        // Case 3: All other queries (e.g., where('name', ...))
+        return parent::where($column, $operator, $value, $boolean);
+    }
+
+    /**
+     * Add an "or where" clause to the query.
+     *
+     * @param array|\Closure|string $column
+     * @param mixed                 $operator
+     * @param mixed                 $value
+     *
+     * @return $this
+     */
+    public function orWhere($column, $operator = null, $value = null)
+    {
+        [$value, $operator] = $this->query->prepareValueAndOperator(
+            $value,
+            $operator,
+            2 === \func_num_args()
+        );
+
+        return $this->where($column, $operator, $value, 'or');
+    }
+
+    /**
+     * Add a "where key" clause to the query.
+     *
+     * @param mixed $id
+     * @param mixed $boolean
+     *
+     * @return $this
+     */
+    public function whereKey($id, $boolean = 'and')
+    {
+        if ($id instanceof Key) {
+            $this->query->where('__key__', '=', $id, $boolean);
+
+            return $this;
+        }
+
+        if (\is_array($id) || $id instanceof Arrayable) {
+            $keys = [];
+            foreach ($id as $rawId) {
+                $keys[] = $this->model->getKey($rawId);
+            }
+
+            // Datastore does not support 'IN' queries on the key.
+            // This is a limitation. We can only support a single key.
+            if (\count($keys) > 1) {
+                throw new \LogicException('Datastore does not support WHERE KEY IN (...) queries. Use lookup() instead.');
+            }
+
+            if (empty($keys)) {
+                // Emulate a "where 1=0"
+                $this->query->where('__key__', '=', null, $boolean);
+
+                return $this;
+            }
+
+            $this->query->where('__key__', '=', $keys[0], $boolean);
+
+            return $this;
+        }
+
+        // Handle single raw IDs (e.g., '123' or 'uuid-string')
+        return $this->whereKey($this->model->getKey($id), $boolean);
+    }
+
     protected function remapWhereForSelect(array $attributes)
     {
-        if (!empty($attributes['id'])) {
-            $attributes['__key__'] = $this->model->getKey($attributes['id']);
-            unset($attributes['id']);
+        $keyName = $this->model->getKeyName();
+
+        if (!empty($attributes[$keyName])) {
+            $attributes['__key__'] = $this->model->getKey($attributes[$keyName]);
+            unset($attributes[$keyName]);
         }
 
         return $attributes;

@@ -89,6 +89,51 @@ DB::connection('datastore')
 ```
 It will return a collection.
 
+### Understanding Primary Keys: `__key__` vs. `$primaryKey` vs. `id`
+
+To use this driver effectively, it's important to understand how it handles Datastore's keys.
+
+**1. The "Ground Truth": Datastore's `__key__`**
+
+In Google Datastore, the true primary key for every entity is the `__key__` property. This is a complex `Key` object that contains the Kind, the scalar identifier (a string name or numeric ID), and any ancestor information. All final database operations (lookups, saves, deletes) *must* use this `Key` object.
+
+**2. The Eloquent Layer (Recommended)**
+
+The Eloquent `Model` (e.g., `App\Models\User`) provides a high-level, model-aware abstraction.
+
+* **The `$primaryKey` is an ALIAS:** The `$primaryKey` property on your model (which defaults to `'id'`) is just a convenient **alias** for the scalar identifier (the string/int) part of the `__key__`.
+* **Customization:** You can change this alias. If you set `protected $primaryKey = 'uuid';` on your `User` model, the driver will automatically handle all the mapping.
+* **Two-Way Mapping:**
+    * **Query (Out):** `User::where('uuid', 'my-uuid-string')->first()` is automatically translated by the driver into a `...WHERE __key__ = Key('User', 'my-uuid-string')` query.
+    * **Hydration (In):** When the driver fetches data, it automatically populates the `uuid` attribute on your model with the key's identifier.
+
+```php
+// With: protected $primaryKey = 'uuid';
+
+// GOOD: This all works as you'd expect.
+$user = User::where('uuid', 'my-uuid-string')->first();
+$user = User::find('my-uuid-string');
+$user = User::firstOrCreate(['uuid' => 'my-uuid-string']);
+$uuid = $user->uuid;
+```
+
+**3. The Base Query Builder (The "Escape Hatch")**
+
+If you bypass Eloquent and use the base Query Builder (e.g., `DB::table('users')` or `User::query()->toBase()`), you are in a *model-agnostic* layer. This layer does **not** know about your model's `$primaryKey = 'uuid'` alias.
+
+* **Fixed Convention**: To provide a consistent way to query keys at this level, the driver's query processor synthesizes the key's scalar identifier into a single, hardcoded property named `id`.
+* **You MUST use `id`**: When using the base Query Builder, you **must** use `'id'` to query the key's identifier, regardless of what your Eloquent model's `$primaryKey` is set to.
+
+```php
+// GOOD: This works, even if the model's $primaryKey is 'uuid'.
+$user = DB::table('users')->where('id', 'my-uuid-string')->first();
+
+// BAD: This will NOT work.
+// The query builder will look for a *data property* named 'uuid',
+// not the entity's key, because it is model-agnostic.
+$user = DB::table('users')->where('uuid', 'my-uuid-string')->first();
+```
+
 ## Tested Builder Functions
 - [x] `connection`
 - [x] `table`
@@ -104,7 +149,7 @@ It will return a collection.
 - [x] `get`
 - [x] `pluck`
 - [x] `exists`
-- [x] `count` (**Note**: This performs a keys-only query and counts the results, it is not a high-performance aggregation. Avoid using count() without where clauses on very large kinds.)
+- [x] `count` (**Note:** This performs a keys-only query and counts the results; it is not a high-performance aggregation. Avoid using `count()` without `where` clauses on very large kinds, as it may be slow and costly.)
 - [ ] `simplePaginate`
 - [ ] `paginate` (works same as simplePaginate)
 - [x] `first`

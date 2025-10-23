@@ -69,7 +69,14 @@ abstract class Model extends BaseModel
     protected $excludeFromIndexes = [];
 
     /**
-     * The primary key for the datastore should be "id".
+     * The primary key for the model.
+     *
+     * This property defines a user-friendly "alias" for the scalar (string or int)
+     * identifier of the entity's true Datastore Key (`__key__`).
+     *
+     * By default, this is 'id'. You can override it (e.g., to 'uuid'),
+     * and the driver will automatically handle the two-way mapping for all
+     * Eloquent operations (find, where, save, hydrate, etc.).
      *
      * @var string
      */
@@ -119,8 +126,8 @@ abstract class Model extends BaseModel
             );
         } else {
             // Case 3: Other. (Exists but no __key__, or New and not-incrementing)
-            // Build key from 'id' attribute.
-            $idValue = $this->attributes['id'] ?? null;
+            // Build key from the model's primary key attribute.
+            $idValue = $this->attributes[$this->getKeyName()] ?? null;
 
             $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
@@ -158,7 +165,12 @@ abstract class Model extends BaseModel
         $this->mergeAttributesFromCachedCasts();
 
         $attributes = $this->attributes;
-        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__'], $attributes['__parent__']);
+
+        // Unset all internal key-related fields
+        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__'], $attributes['__parent__'], $attributes[$this->getKeyName()]);
+
+        // Also unset the model's primary key attribute (e.g., 'id' or 'uuid')
+        // so it is not saved as a data property within the entity.
 
         return $attributes;
     }
@@ -233,16 +245,6 @@ abstract class Model extends BaseModel
     public function fromDateTime($value): \DateTimeInterface
     {
         return empty($value) ? $value : $this->asDateTime($value);
-    }
-
-    /**
-     * If there is no id attribute then make the key as id.
-     *
-     * @param null|mixed $value
-     */
-    public function getIdAttribute($value = null)
-    {
-        return $this->getDatastoreKeyIdentifier($value);
     }
 
     /**
@@ -493,6 +495,32 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Set the array of model attributes. No checking is done.
+     *
+     * This method is overridden to handle remapping the
+     * Datastore query processor's hardcoded 'id' field
+     * to the model's actual $primaryKey.
+     *
+     * @param bool $sync
+     *
+     * @return $this
+     */
+    public function setRawAttributes(array $attributes, $sync = false)
+    {
+        $keyName = $this->getKeyName();
+
+        // If the query processor provided an 'id' and the model's primary
+        // key is *not* 'id', remap the 'id' value to the correct
+        // primary key attribute.
+        if (isset($attributes['id']) && 'id' !== $keyName) {
+            $attributes[$keyName] = $attributes['id'];
+            unset($attributes['id']);
+        }
+
+        return parent::setRawAttributes($attributes, $sync);
+    }
+
+    /**
      * Update the creation and update timestamps.
      *
      * @return $this
@@ -546,6 +574,32 @@ abstract class Model extends BaseModel
     public function getExpireAtColumn()
     {
         return static::EXPIRE_AT;
+    }
+
+    /**
+     * Transform a raw model value using mutators, casts, etc.
+     *
+     * This is overridden to dynamically apply our primary key
+     * accessor logic to whatever $primaryKey is set to.
+     *
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return mixed
+     */
+    protected function transformModelValue($key, $value)
+    {
+        // Check if the attribute being accessed is the model's primary key
+        if ($key === $this->getKeyName()) {
+            // It is. Run our special key identifier logic.
+            // This logic will use the $value if present (from $attributes)
+            // or fall back to the '__key__' property.
+            return $this->getDatastoreKeyIdentifier($value);
+        }
+
+        // If it's not our primary key, proceed with normal Eloquent logic
+        // (which will check for other accessors, casts, dates, etc.)
+        return parent::transformModelValue($key, $value);
     }
 
     /**
@@ -616,8 +670,9 @@ abstract class Model extends BaseModel
                 return true;
             }
 
-            if (empty($attributes['id'])) {
-                throw new MissingAttributeException($this, 'id');
+            $keyName = $this->getKeyName();
+            if (empty($attributes[$keyName])) {
+                throw new MissingAttributeException($this, $keyName);
             }
 
             $query->insert($attributes, $this->getQueryOptions());
