@@ -71,6 +71,10 @@ class Builder extends EloquentBuilder
 
     public function find($id, $columns = [])
     {
+        if (null === $id) {
+            return null;
+        }
+
         $result = $this->query->cacheTags([
             $this->model->getCacheTagForFind($id),
         ])->find(

@@ -221,7 +221,7 @@ abstract class Model extends BaseModel
      */
     public function getIdAttribute($value = null)
     {
-        return empty($value) ? ($this->__key__->path()[0]['name'] ?? $this->__key__->path()[0]['id'] ?? '') : $value;
+        return $this->getDatastoreKeyIdentifier($value);
     }
 
     /**
@@ -231,7 +231,7 @@ abstract class Model extends BaseModel
      */
     public function getKeyAttribute($value = null)
     {
-        return empty($value) ? ($this->__key__->path()[0]['name'] ?? $this->__key__->path()[0]['id'] ?? '') : $value;
+        return $this->getDatastoreKeyIdentifier($value);
     }
 
     /**
@@ -525,6 +525,31 @@ abstract class Model extends BaseModel
     public function getExpireAtColumn()
     {
         return static::EXPIRE_AT;
+    }
+
+    /**
+     * Get the identifier (name or ID) from the Datastore Key object.
+     *
+     * @param null|mixed $value
+     *
+     * @return mixed
+     */
+    protected function getDatastoreKeyIdentifier($value = null)
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        /** @var ?Key $key */
+        // We must read from $this->attributes directly, as $this->getAttribute('__key__')
+        // will call $this->getAttributes(), which strips '__key__' from the result.
+        $key = $this->attributes['__key__'] ?? null;
+
+        if ($key instanceof Key) {
+            return $key->path()[0]['name'] ?? $key->path()[0]['id'] ?? null;
+        }
+
+        return null;
     }
 
     /**

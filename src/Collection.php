@@ -26,7 +26,7 @@ class Collection extends BaseCollection
     public function delete()
     {
         $this->each(static function ($item): void {
-            if (empty($item->__key__)) {
+            if (empty($item['__key__'])) {
                 throw new \LogicException('Unable to create query for collection with mixed types.');
             }
         });
