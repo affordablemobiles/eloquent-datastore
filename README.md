@@ -38,7 +38,7 @@ AffordableMobiles\EloquentDatastore\DatastoreServiceProvider::class,
 - [x] Auto-generated primary key.
 - [x] Read multiple pages of data with Datastore cursors.
 - [x] Batch update from Eloquent collection.
-- [ ] Cursor Paginate.
+- [ ] `cursorPaginate` (Datastore cursors are used for `chunk` and `lazy`, but full pagination is not yet implemented)
 - [x] Ancestor key relations.
 - [x] Datastore Namespaces (Multi-Tenancy).
 
@@ -104,7 +104,7 @@ It will return a collection.
 - [x] `get`
 - [x] `pluck`
 - [x] `exists`
-- [x] `count`
+- [x] `count` (**Note**: This performs a keys-only query and counts the results, it is not a high-performance aggregation. Avoid using count() without where clauses on very large kinds.)
 - [ ] `simplePaginate`
 - [ ] `paginate` (works same as simplePaginate)
 - [x] `first`

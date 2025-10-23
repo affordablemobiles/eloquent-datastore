@@ -100,22 +100,10 @@ class DatastoreConnection extends Connection
 
     /**
      * Set the query grammar to the default implementation.
-     *
-     * @return void
      */
-    public function useDefaultQueryGrammar()
+    public function useDefaultQueryGrammar(): void
     {
         $this->queryGrammar = $this->getDefaultQueryGrammar();
-    }
-
-    /**
-     * Get the default query grammar instance.
-     *
-     * @return \Illuminate\Database\Query\Grammars\Grammar
-     */
-    protected function getDefaultQueryGrammar()
-    {
-        return new QueryGrammar($this);
     }
 
     /**
@@ -180,5 +168,15 @@ class DatastoreConnection extends Connection
     public function disconnect(): void
     {
         $this->setClient(null);
+    }
+
+    /**
+     * Get the default query grammar instance.
+     *
+     * @return \Illuminate\Database\Query\Grammars\Grammar
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return new QueryGrammar($this);
     }
 }

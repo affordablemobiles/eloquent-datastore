@@ -357,8 +357,8 @@ trait QueriesDatastore
      * Add a nested where statement to the query.
      *
      * Datastore doesn't support nested where queries,
-     *  but we need support for this for some other functionality
-     *  so we'll just add them as standard WHERE conditions.
+     * but we need support for this for some other functionality
+     * so we'll just add them as standard WHERE conditions.
      *
      * @param string $boolean
      * @param mixed  $callback
@@ -367,6 +367,10 @@ trait QueriesDatastore
      */
     public function whereNested($callback, $boolean = 'and')
     {
+        if ('or' === strtolower($boolean)) {
+            throw new \LogicException('Datastore does not support nested OR WHERE clauses.');
+        }
+
         $callback($this);
 
         return $this;

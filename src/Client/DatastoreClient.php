@@ -7,6 +7,7 @@ namespace AffordableMobiles\EloquentDatastore\Client;
 use Google\Cloud\Datastore\DatastoreClient as BaseDatastoreClient;
 use Google\Cloud\Datastore\EntityInterface;
 use Google\Cloud\Datastore\Key;
+use Illuminate\Support\Facades\Log;
 
 class DatastoreClient extends BaseDatastoreClient
 {

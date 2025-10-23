@@ -85,21 +85,30 @@ abstract class Model extends BaseModel
     public function getKey($id = false)
     {
         if ($id) {
-            return $this->getConnection()->getClient()->key(
+            $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string) $id,
+                $this->incrementing ? (int) $id : (string) $id,
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                     'namespaceId'    => $this->namespace,
                 ]
             );
+            // Only apply parent if we are building a key from an ID.
+            if (isset($this->attributes['__parent__'])) {
+                $key->ancestorKey($this->attributes['__parent__']);
+            }
+
+            return $key;
+        }
+
+        // Case 1: Model has a __key__ (from DB). Use it. It's definitive.
+        if (isset($this->attributes['__key__'])) {
+            return $this->attributes['__key__'];
         }
 
         $key = null;
         if ((!$this->exists) && $this->incrementing) {
-            // If the record doesn't yet exist
-            // and we are using auto generated keys,
-            // return an incomplete key.
+            // Case 2: New model, auto-incrementing. Create incomplete key.
             $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
                 null,
@@ -108,12 +117,15 @@ abstract class Model extends BaseModel
                     'namespaceId'    => $this->namespace,
                 ]
             );
-        } elseif (isset($this->attributes['__key__'])) {
-            return $this->attributes['__key__'];
         } else {
+            // Case 3: Other. (Exists but no __key__, or New and not-incrementing)
+            // Build key from 'id' attribute.
+            $idValue = $this->attributes['id'] ?? null;
+
             $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
-                (string) $this->attributes['id'],
+                // Safely handle null $idValue
+                $this->incrementing ? ($idValue ? (int) $idValue : null) : ($idValue ? (string) $idValue : null),
                 [
                     'identifierType' => $this->incrementing ? Key::TYPE_ID : Key::TYPE_NAME,
                     'namespaceId'    => $this->namespace,
@@ -197,9 +209,18 @@ abstract class Model extends BaseModel
             return 0;
         }
 
-        $records = $this->newModelQuery()->lookup($ids, ['__key__']);
+        // 1. Create a new instance of the model to access its config
+        $instance = new static();
 
-        $records->delete();
+        // 2. Get the base query builder
+        $query = $instance->newModelQuery()->toBase();
+
+        // 3. Map the raw IDs to full Datastore Key objects
+        //    (This avoids doing a lookup/read query)
+        $keys = array_map(static fn ($id) => $id instanceof Key ? $id : $instance->getKey($id), $ids);
+
+        // 4. Call delete directly on the query builder with the keys
+        $query->delete($keys);
 
         return \count($ids);
     }
