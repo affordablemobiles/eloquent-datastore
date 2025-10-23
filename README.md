@@ -10,7 +10,9 @@ By using this package, you can use `query builder` and `eloquent` to access data
 
 ## Installation
 
-**This package requires Laravel 9.x & PHP 8.1 as a minimum.**
+**This package requires PHP 8.3 as a minimum.**
+
+This branch targets Laravel 12.x. For compatibility with other Laravel versions, please see the appropriate branch.
 
 You can install the package via composer:
 

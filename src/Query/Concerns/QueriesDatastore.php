@@ -80,9 +80,13 @@ trait QueriesDatastore
             }
 
             if (true === $this->distinct) {
-                throw new \LogicException('must specify columns for distinct query');
-            }
-            if (\is_array($this->distinct)) {
+                // Check if columns are set. If not, it's an invalid query.
+                if (empty($this->columns)) {
+                    throw new \LogicException('must specify columns for distinct query');
+                }
+                // If columns ARE set, apply distinctOn to them.
+                $query->distinctOn($this->columns);
+            } elseif (\is_array($this->distinct)) {
                 $query->distinctOn($this->distinct);
             }
 

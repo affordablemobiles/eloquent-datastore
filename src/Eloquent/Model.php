@@ -444,17 +444,19 @@ abstract class Model extends BaseModel
      * Reload a fresh model instance from the database.
      *
      * @param array|string $with
+     * @param array|string $without
      *
-     * @return null|static
+     * @return ?static
      */
-    public function fresh($with = [])
+    public function fresh($with = [], $without = [])
     {
         if (!$this->exists) {
-            return;
+            return null;
         }
 
-        if (!empty($with)) {
-            throw new \LogicException('$with attribute unsupported');
+        if (!empty($with) || !empty($without)) {
+            // Note: Datastore driver does not support eager loading relations.
+            throw new \LogicException('$with or $without attribute unsupported');
         }
 
         $query = $this->newModelQuery();
@@ -463,7 +465,7 @@ abstract class Model extends BaseModel
             $this->getCacheTagForFind()
         );
 
-        return $query->find($this->id);
+        return $query->find($this->getKeyIdentifier());
     }
 
     /**

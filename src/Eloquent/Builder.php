@@ -69,7 +69,7 @@ class Builder extends EloquentBuilder
         return $this->query->lastCursor();
     }
 
-    public function find($id, $columns = [])
+    public function find($id, $columns = ['*'])
     {
         if (null === $id) {
             return null;
