@@ -95,7 +95,11 @@ class Collection extends BaseCollection
 
         $model = $this->prepareBulkQuery();
 
-        return $model->newModelQuery()->toBase()->delete($this->modelKeys());
+        // Iterate over the models and get their full Key object,
+        // which includes the necessary ancestor path for descendants.
+        $keys = $this->map(static fn ($model) => $model->getKey())->all();
+
+        return $model->newModelQuery()->toBase()->delete($keys);
     }
 
     protected function prepareBulkQuery()

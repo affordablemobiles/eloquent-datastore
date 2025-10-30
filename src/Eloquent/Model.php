@@ -465,7 +465,9 @@ abstract class Model extends BaseModel
             $this->getCacheTagForFind()
         );
 
-        return $query->find($this->getKeyIdentifier());
+        return $query->find(
+            $this->getKey()
+        );
     }
 
     /**
