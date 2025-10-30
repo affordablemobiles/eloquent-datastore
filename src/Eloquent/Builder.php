@@ -148,7 +148,7 @@ class Builder extends EloquentBuilder
      */
     public function firstOrNew(array $attributes = [], array $values = [])
     {
-        if (null !== ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
+        if (null !== ($instance = $this->where($attributes)->first())) {
             return $instance;
         }
 
@@ -162,7 +162,7 @@ class Builder extends EloquentBuilder
      */
     public function firstOrCreate(array $attributes = [], array $values = [])
     {
-        if (null !== ($instance = $this->where($this->remapWhereForSelect($attributes))->first())) {
+        if (null !== ($instance = $this->where($attributes)->first())) {
             return $instance;
         }
 
@@ -284,17 +284,5 @@ class Builder extends EloquentBuilder
 
         // Handle single raw IDs (e.g., '123' or 'uuid-string')
         return $this->whereKey($this->model->getKey($id), $boolean);
-    }
-
-    protected function remapWhereForSelect(array $attributes)
-    {
-        $keyName = $this->model->getKeyName();
-
-        if (!empty($attributes[$keyName])) {
-            $attributes['__key__'] = $this->model->getKey($attributes[$keyName]);
-            unset($attributes[$keyName]);
-        }
-
-        return $attributes;
     }
 }
