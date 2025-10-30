@@ -60,8 +60,10 @@ class DatastoreConnection extends Connection
      *
      * @param mixed $name
      * @param mixed $arguments
+     *
+     * @return mixed
      */
-    public function __call($name, $arguments): void
+    public function __call($name, $arguments)
     {
         $this->forwardCallTo($this->client, $name, $arguments);
     }
