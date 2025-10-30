@@ -92,6 +92,10 @@ abstract class Model extends BaseModel
     public function getKey($id = false)
     {
         if ($id) {
+            if ($id instanceof Key) {
+                return $id;
+            }
+
             $key = $this->getConnection()->getClient()->key(
                 $this->getTable(),
                 $this->incrementing ? (int) $id : (string) $id,
@@ -164,15 +168,11 @@ abstract class Model extends BaseModel
     {
         $this->mergeAttributesFromCachedCasts();
 
-        $attributes = $this->attributes;
-
-        // Unset all internal key-related fields
-        unset($attributes['_key'], $attributes['_keys'], $attributes['__key__'], $attributes['__parent__'], $attributes[$this->getKeyName()]);
-
-        // Also unset the model's primary key attribute (e.g., 'id' or 'uuid')
-        // so it is not saved as a data property within the entity.
-
-        return $attributes;
+        return array_filter(
+            $this->attributes,
+            fn ($key) => !\in_array($key, ['_key', '_keys', '__key__', '__parent__', $this->getKeyName()], true),
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     public function delete(): bool
@@ -221,20 +221,19 @@ abstract class Model extends BaseModel
             return 0;
         }
 
-        // 1. Create a new instance of the model to access its config
-        $instance = new static();
+        // Rework to use events, like base Eloquent
+        $count = 0;
+        // We need to find the models to call delete() on them individually
+        // to fire events and clear caches.
+        $models = (new static())->newQuery()->findMany($ids);
 
-        // 2. Get the base query builder
-        $query = $instance->newModelQuery()->toBase();
+        foreach ($models as $model) {
+            if ($model->delete()) { // This will fire events & clear caches
+                ++$count;
+            }
+        }
 
-        // 3. Map the raw IDs to full Datastore Key objects
-        //    (This avoids doing a lookup/read query)
-        $keys = array_map(static fn ($id) => $id instanceof Key ? $id : $instance->getKey($id), $ids);
-
-        // 4. Call delete directly on the query builder with the keys
-        $query->delete($keys);
-
-        return \count($ids);
+        return $count;
     }
 
     /**
@@ -389,10 +388,10 @@ abstract class Model extends BaseModel
         ];
     }
 
-    public function finishBulkUpsert($id = null)
+    public function finishBulkUpsert(?Key $key = null)
     {
         if (!$this->exists) {
-            return $this->finishBulkInsert($id);
+            return $this->finishBulkInsert($key);
         }
 
         $dirty = $this->getDirty();
@@ -406,13 +405,39 @@ abstract class Model extends BaseModel
         return true;
     }
 
-    public function finishBulkInsert($id = null)
+    /**
+     * Set a given attribute on the model.
+     *
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return mixed
+     *
+     * @throws \LogicException
+     */
+    public function setAttribute($key, $value)
     {
-        if ($this->getIncrementing()) {
-            if (!empty($id)) {
-                // Set the auto generated key ID on a bulk insert...
-                $this->setAttribute($this->getKeyName(), $id);
-            }
+        $immutableKeys = [
+            $this->getKeyName(), // The scalar alias (e.g., 'id', 'uuid')
+            '__key__',           // The full Datastore Key object
+            '__parent__',        // The ancestor key reference
+        ];
+
+        // If the model already exists and the user is trying to set one of the immutable keys...
+        if ($this->exists && \in_array($key, $immutableKeys, true)) {
+            throw new \LogicException(
+                "Attempted to modify immutable key attribute '{$key}' on an existing model. Datastore keys cannot be changed."
+            );
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
+    public function finishBulkInsert(?Key $key = null)
+    {
+        if ($key instanceof Key) {
+            $this->attributes['__key__']            = $key;
+            $this->attributes[$this->getKeyName()]  = $this->getDatastoreKeyIdentifier();
         }
 
         // We will go ahead and set the exists property to true, so that it is set when
@@ -623,7 +648,7 @@ abstract class Model extends BaseModel
      */
     protected function getDatastoreKeyIdentifier($value = null)
     {
-        if (!empty($value)) {
+        if (null !== $value) {
             return $value;
         }
 
@@ -657,11 +682,11 @@ abstract class Model extends BaseModel
             $this->updateTimestamps();
         }
 
+        $attributes = $this->getAttributesForInsert();
+
         // If the model has an incrementing key, we can use the "insertGetId" method on
         // the query builder, which will give us back the final inserted ID for this
         // table from the database. Not all tables have to be incrementing though.
-        $attributes = $this->getAttributesForInsert();
-
         if ($this->getIncrementing()) {
             $this->insertAndSetId(
                 $query,
@@ -683,11 +708,23 @@ abstract class Model extends BaseModel
             }
 
             $keyName = $this->getKeyName();
-            if (empty($attributes[$keyName])) {
+            if (empty($this->attributes[$keyName])) {
                 throw new MissingAttributeException($this, $keyName);
             }
 
-            $query->insert($attributes, $this->getQueryOptions());
+            $key = $this->getKey();
+
+            $query->insert(
+                array_merge(
+                    [
+                        '__key__' => $key,
+                    ],
+                    $attributes
+                ),
+                $this->getQueryOptions()
+            );
+
+            $this->attributes['__key__'] = $key;
         }
 
         // We will go ahead and set the exists property to true, so that it is set when
@@ -709,9 +746,12 @@ abstract class Model extends BaseModel
      */
     protected function insertAndSetId(BaseBuilder $query, $attributes): void
     {
-        $id = $query->insertGetId($attributes, $keyName = $this->getKeyName(), $this->getQueryOptions());
+        $keyName = $this->getKeyName();
 
-        $this->setAttribute($keyName, $id);
+        $key = $query->insertGetId($attributes, $keyName, $this->getQueryOptions());
+
+        $this->attributes['__key__'] = $key;
+        $this->attributes[$keyName]  = $this->getDatastoreKeyIdentifier();
     }
 
     /**

@@ -69,17 +69,43 @@ class Builder extends EloquentBuilder
         return $this->query->lastCursor();
     }
 
+    /**
+     * Set the columns to be selected.
+     *
+     * @param array|mixed $columns
+     *
+     * @return $this
+     */
+    public function select($columns = ['*'])
+    {
+        $columns = \is_array($columns) ? $columns : \func_get_args();
+
+        // Translate the key alias before passing to the base builder
+        $translatedColumns = $this->translateKeyAliasForColumns($columns);
+
+        // Call the underlying Query\Builder's select
+        $this->query->select($translatedColumns);
+
+        return $this;
+    }
+
     public function find($id, $columns = ['*'])
     {
         if (null === $id) {
             return null;
         }
 
+        $translatedColumns = $this->translateKeyAliasForColumns(
+            \is_array($columns) ? $columns : [$columns]
+        );
+
+        $key = $this->model->getKey($id);
+
         $result = $this->query->cacheTags([
-            $this->model->getCacheTagForFind($id),
+            $this->model->getCacheTagForFind($key),
         ])->find(
-            $this->model->getKey($id),
-            $columns
+            $key,
+            $translatedColumns,
         );
 
         if (null === $result) {
@@ -117,10 +143,14 @@ class Builder extends EloquentBuilder
 
     public function lookup($key, $columns = [])
     {
+        $translatedColumns = $this->translateKeyAliasForColumns(
+            \is_array($columns) ? $columns : [$columns]
+        );
+
         if (\is_array($key)) {
             $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->model->getKey($id), $key);
 
-            $results = $this->query->lookup($key, $columns);
+            $results = $this->query->lookup($key, $translatedColumns);
 
             return $this->hydrate($results);
         }
@@ -129,7 +159,7 @@ class Builder extends EloquentBuilder
 
         $result = $this->query->find(
             $key,
-            $columns
+            $translatedColumns,
         );
 
         if (null === $result) {
@@ -201,21 +231,14 @@ class Builder extends EloquentBuilder
         }
 
         // Case 2: where('uuid', '123') or where('uuid', '=', '123')
-        if (\is_string($column) && $column === $keyName) {
-            // We have a query for the primary key.
-            // We must convert it to a '__key__' query.
+        if (\is_string($column) && ($column === $keyName || '__key__' === $column)) {
             [$value, $operator] = $this->query->prepareValueAndOperator(
                 $value,
                 $operator,
                 2 === \func_num_args()
             );
 
-            // Build the full Datastore Key for the query
-            $datastoreKey = $this->model->getKey($value);
-
-            $this->query->where('__key__', $operator, $datastoreKey, $boolean);
-
-            return $this;
+            return $this->whereKey($value, $boolean);
         }
 
         // Case 3: All other queries (e.g., where('name', ...))
@@ -284,5 +307,34 @@ class Builder extends EloquentBuilder
 
         // Handle single raw IDs (e.g., '123' or 'uuid-string')
         return $this->whereKey($this->model->getKey($id), $boolean);
+    }
+
+    /**
+     * Translates the dynamic $primaryKey alias (e.g., 'uuid') to the
+     * base query builder's hardcoded 'id' alias.
+     *
+     * @return array
+     */
+    private function translateKeyAliasForColumns(array $columns)
+    {
+        // Get the model's dynamic primary key name (e.g., 'uuid')
+        $modelKeyName = $this->model->getKeyName();
+
+        // Get the model-agnostic hardcoded key name
+        $baseKeyName = 'id';
+
+        // If the names are the same, no translation is needed.
+        if ($modelKeyName === $baseKeyName) {
+            return $columns;
+        }
+
+        // Remap the dynamic key to the base key for the query
+        return array_map(static function ($column) use ($modelKeyName, $baseKeyName) {
+            if (\is_string($column) && $column === $modelKeyName) {
+                return $baseKeyName;
+            }
+
+            return $column;
+        }, $columns);
     }
 }

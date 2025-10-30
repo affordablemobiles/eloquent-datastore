@@ -91,6 +91,36 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
     }
 
     /**
+     * Add a basic where clause to the query.
+     *
+     * Overridden to handle '__key__' columns automatically,
+     * applying ancestors.
+     *
+     * @param array|\Closure|string $column
+     * @param mixed                 $operator
+     * @param mixed                 $value
+     * @param string                $boolean
+     *
+     * @return $this
+     */
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if (\is_string($column) && '__key__' === $column) {
+            [$value, $operator] = $this->prepareValueAndOperator(
+                $value,
+                $operator,
+                2 === \func_num_args()
+            );
+
+            if ($value instanceof Key && $this->ancestor instanceof Key) {
+                $value->ancestorKey($this->ancestor);
+            }
+        }
+
+        return parent::where($column, $operator, $value, $boolean);
+    }
+
+    /**
      * set the namespace.
      *
      * @param mixed $namespaceId

@@ -9,6 +9,7 @@ use AffordableMobiles\EloquentDatastore\Collection;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
+use Google\Cloud\Datastore\V1\PropertyMask;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Pagination\Cursor;
@@ -31,25 +32,47 @@ trait QueriesDatastore
                 $this->columns = [];
             }
 
-            if (\is_array($key)) {
-                $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->getClient()->key($this->from, $id, $this->getClientOptions()), $key);
+            $clientOptions = [];
 
-                $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookupBatch'], [$key]);
+            // 1. Check for keysOnly first.
+            if ($this->keysOnly) {
+                $clientOptions['propertyMask'] = (new PropertyMask())
+                    ->setPaths(['__key__'])
+                ;
+            }
+            // 2. If not keysOnly, check for a user-defined projection
+            //    (which $this->columns now represents).
+            elseif (!empty($this->columns)) {
+                $properties = array_filter($this->columns, static fn ($col) => 'id' !== $col);
 
-                $result = array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
-
-                return empty($this->columns) ? $result : array_map(fn ($res) => Arr::only($res, Arr::wrap($this->columns)), $result);
+                if (!empty($properties)) {
+                    $clientOptions['propertyMask'] = (new PropertyMask())
+                        ->setPaths($properties)
+                    ;
+                }
             }
 
-            $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookup'], [$key]);
+            if (\is_array($key)) {
+                $key = array_map(fn ($id) => $this->getKey($id), $key);
+
+                $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                    [$this->getClient(), 'lookupBatch'],
+                    [$key, $clientOptions],
+                );
+
+                return array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
+            }
+
+            $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                [$this->getClient(), 'lookup'],
+                [$key, $clientOptions],
+            );
 
             if (!$result || empty($result)) {
                 return null;
             }
 
-            $result = $this->processor->processSingleResult($this, $result);
-
-            return empty($this->columns) ? $result : Arr::only($result, Arr::wrap($this->columns));
+            return $this->processor->processSingleResult($this, $result);
         });
     }
 
@@ -167,9 +190,9 @@ trait QueriesDatastore
                 $keys = Arr::wrap($key);
             } else {
                 if (\is_array($key)) {
-                    $keys = array_map(fn ($item) => $item instanceof Key ? $item : $this->getClient()->key($this->from, $item, $this->getClientOptions()), $key);
+                    $keys = array_map(fn ($id) => $this->getKey($id), $key);
                 } else {
-                    $keys = [$this->getClient()->key($this->from, $key, $this->getClientOptions())];
+                    $keys = [$this->getKey($key)];
                 }
             }
         }
@@ -211,7 +234,7 @@ trait QueriesDatastore
             $key = null;
 
             if (isset($value['id'])) {
-                $key = $this->getClient()->key($this->from, $value['id'], $this->getClientOptions() + [
+                $key = $this->getKey($value['id'], [
                     'identifierType' => Key::TYPE_NAME,
                 ]);
                 unset($value['id']);
@@ -221,7 +244,7 @@ trait QueriesDatastore
             }
 
             if (null === $key) {
-                $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
+                $key = $this->getKey(null);
             }
 
             $entities[] = $this->getClient()->entity($key, $value, $options);
@@ -235,10 +258,8 @@ trait QueriesDatastore
      *
      * @param null|string $sequence
      * @param mixed       $options
-     *
-     * @return int
      */
-    public function insertGetId(array $values, $sequence = null, $options = []): string
+    public function insertGetId(array $values, $sequence = null, $options = []): Key
     {
         if (empty($this->from)) {
             throw new \LogicException('No kind/table specified');
@@ -255,12 +276,12 @@ trait QueriesDatastore
         }
 
         if (null === $key) {
-            $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
+            $key = $this->getKey(null);
         }
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity])->pathEndIdentifier();
+        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity]);
     }
 
     public function _upsert(array $values, $keys, $options = [])
@@ -1120,6 +1141,21 @@ trait QueriesDatastore
         throw new \LogicException('Not Implemented');
 
         return false;
+    }
+
+    protected function getKey($id = null, array $options = []): Key
+    {
+        if ($id instanceof Key) {
+            return $id;
+        }
+
+        $key = $this->getClient()->key($this->from, $id, $this->getClientOptions() + $options);
+
+        if ($this->ancestor instanceof Key) {
+            $key->ancestorKey($this->ancestor);
+        }
+
+        return $key;
     }
 
     protected function getClientOptions(): array
