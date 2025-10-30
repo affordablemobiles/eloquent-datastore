@@ -12,13 +12,16 @@ class Collection extends BaseCollection
      * Reload a fresh model instance from the database for all the entities.
      *
      * @param array<array-key, string>|string $with
-     *
-     * @return static
+     * @param mixed                           $without
      */
-    public function fresh($with = [])
+    public function fresh($with = [], $without = []): static
     {
         if ($this->isEmpty()) {
             return new static();
+        }
+
+        if (!empty($with) || !empty($without)) {
+            throw new \LogicException('Datastore driver does not support $with or $without on fresh()');
         }
 
         $model = $this->prepareBulkQuery();

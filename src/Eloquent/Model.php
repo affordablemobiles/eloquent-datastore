@@ -471,12 +471,20 @@ abstract class Model extends BaseModel
     /**
      * Reload the current model instance with fresh attributes from the database.
      *
+     * @param mixed $with
+     * @param mixed $without
+     *
      * @return $this
      */
-    public function refresh()
+    public function refresh($with = [], $without = [])
     {
         if (!$this->exists) {
-            return $this;
+            return null;
+        }
+
+        if (!empty($with) || !empty($without)) {
+            // Note: Datastore driver does not support eager loading relations.
+            throw new \LogicException('$with or $without attribute unsupported');
         }
 
         $query = $this->newBaseQueryBuilder();
