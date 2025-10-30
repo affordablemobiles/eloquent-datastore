@@ -36,26 +36,53 @@ trait QueryCacheable
     /**
      * Get a cache tag identifying a single record by ID.
      *
-     * @param null|mixed $id
+     * @param null|int|Key|string $id the scalar ID or full Key object
      */
     public function getCacheTagForFind($id = null): string
     {
-        if (null === $id) {
-            $id = $this->id;
+        $key = null;
+
+        if ($id instanceof \Google\Cloud\Datastore\Key) {
+            // We were given a full Key object (e.g., from find(Key $key))
+            $key = $id;
+        } elseif (null !== $id) {
+            // We were given a scalar ID, build the Key from it.
+            // This correctly assumes a root entity, matching Model::find() behavior.
+            $key = $this->getKey($id);
+        } else {
+            // $id was null, get the Key from the model instance itself
+            // (e.g., during recacheFindQuery)
+            $key = $this->getKey();
         }
 
-        return (string) static::class.':'.(string) $id;
+        // Always serialize the full path for a unique, consistent identifier
+        $keyIdentifier = 'key:'.json_encode($key->path());
+
+        return (string) static::class.':'.$keyIdentifier;
     }
 
     /**
-     * Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
-     *  this is designed for use mainly with the `array` cache driver for inside a single request.
+     * Re-cache the model for a fetch($id) query.
      */
     public function recacheFindQuery()
     {
+        // Get the full Key object. This is the most reliable
+        // identifier for caching, as it includes ancestors.
+        $keyObject = $this->getKey();
+
+        if (!$keyObject) {
+            return false; // Should not happen
+        }
+
+        // This is now consistent:
+        // 1. getCacheTagForFind() will serialize the $keyObject path.
+        // 2. recacheFindQuery() in QueryCacheModule will also serialize the $keyObject path.
         return $this->newModelQuery()->cacheTags([
-            $this->getCacheTagForFind(),
-        ])->recacheFindQuery($this->id, $this->attributes);
+            $this->getCacheTagForFind($keyObject),
+        ])->recacheFindQuery(
+            $keyObject,
+            $this->attributes
+        );
     }
 
     /**
