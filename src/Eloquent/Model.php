@@ -279,8 +279,8 @@ abstract class Model extends BaseModel
         // that is already in this database using the current IDs in this "where"
         // clause to only update this model. Otherwise, we'll just insert them.
         if ($this->exists) {
-            $saved = $this->isDirty() ?
-                        $this->performUpsert($query) : true;
+            $saved = $this->isDirty()
+                        ? $this->performUpsert($query) : true;
         }
 
         // If the model is brand new, we'll insert it into our database and set the

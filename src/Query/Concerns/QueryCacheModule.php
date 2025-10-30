@@ -23,7 +23,7 @@ trait QueryCacheModule
      *
      * @return mixed
      */
-    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], null|Key|string $id = null)
+    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], Key|string|null $id = null)
     {
         if (null === $this->columns) {
             $this->columns = $columns;
@@ -49,7 +49,7 @@ trait QueryCacheModule
      *
      * @return \Closure
      */
-    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], null|Key|string $id = null)
+    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], Key|string|null $id = null)
     {
         return function () use ($method, $columns, $id) {
             $this->avoidCache = true;
@@ -113,7 +113,7 @@ trait QueryCacheModule
      *
      * @param null|Key|string $id the Key object or scalar ID for find, null otherwise
      */
-    public function generatePlainCacheKey(string $method = 'get', null|Key|string $id = null, ?string $appends = null): string
+    public function generatePlainCacheKey(string $method = 'get', Key|string|null $id = null, ?string $appends = null): string
     {
         $name = $this->connection->getName();
 
