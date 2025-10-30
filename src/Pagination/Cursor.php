@@ -116,7 +116,7 @@ class Cursor implements Arrayable
 
         $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString), true), true);
 
-        if (JSON_ERROR_NONE !== json_last_error()) {
+        if (JSON_ERROR_NONE !== json_last_error() || !\is_array($parameters) || !isset($parameters['_pointsToNextItems'])) {
             return null;
         }
 
