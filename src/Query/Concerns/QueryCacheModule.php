@@ -17,6 +17,15 @@ trait QueryCacheModule
     }
 
     /**
+     * Get the cache key.
+     * Overridden to accept a Key object for the $id parameter.
+     */
+    public function getCacheKey(string $method = 'get', Key|string|null $id = null): string
+    {
+        return $this->getCachePrefix().':'.$this->generatePlainCacheKey($method, $id);
+    }
+
+    /**
      * Get the cache from the current query.
      *
      * @param null|Key|string $id the Key object or scalar ID for find, null otherwise
