@@ -65,7 +65,7 @@ class DatastoreConnection extends Connection
      */
     public function __call($name, $arguments)
     {
-        $this->forwardCallTo($this->client, $name, $arguments);
+        return $this->forwardCallTo($this->client, $name, $arguments);
     }
 
     /**
