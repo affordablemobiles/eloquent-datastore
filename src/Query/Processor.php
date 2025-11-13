@@ -52,7 +52,7 @@ class Processor extends BaseProcessor
             return [];
         }
 
-        $entity['id'] ??= $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
+        $entity['id']         = $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
         $entity['_key']       = $result->key()->path()[0];
         $entity['_keys']      = $result->key()->path();
         $entity['__key__']    = $result->key();

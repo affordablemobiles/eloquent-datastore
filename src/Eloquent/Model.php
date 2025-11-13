@@ -8,6 +8,7 @@ use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
 use Carbon\CarbonInterval;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\MissingAttributeException;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
@@ -88,6 +89,34 @@ abstract class Model extends BaseModel
      * @var string
      */
     protected $keyType = 'int';
+
+    /**
+     * Create a new Eloquent model instance.
+     *
+     * @param array<string, mixed> $attributes
+     *
+     * @throws \LogicException
+     */
+    public function __construct(array $attributes = [])
+    {
+        $keyName = $this->getKeyName();
+
+        if (
+            'id' !== $keyName
+            && ($this->isFillable('id')
+             || $this->hasCast('id')
+             || $this->hasGetMutator('id')
+             || $this->hasSetMutator('id'))
+        ) {
+            throw new \LogicException(
+                'The Eloquent Datastore driver uses a hardcoded "id" field for primary key remapping. '
+                .'Your model ['.static::class.'] has a custom primary key "'.$keyName.'" '
+                .'and also defines "id" as a fillable, castable, or mutated attribute. This is an unsupported conflict.'
+            );
+        }
+
+        parent::__construct($attributes);
+    }
 
     public function getKey($id = false)
     {
@@ -493,6 +522,28 @@ abstract class Model extends BaseModel
         return $query->find(
             $this->getKey()
         );
+    }
+
+    /**
+     * Fill the model with an array of attributes.
+     *
+     * @param array<string, mixed> $attributes
+     *
+     * @return $this
+     *
+     * @throws MassAssignmentException
+     */
+    public function fill(array $attributes)
+    {
+        $keyName = $this->getKeyName();
+
+        if (isset($attributes[$keyName])) {
+            $this->setRawAttributes([$keyName => $attributes[$keyName]]);
+
+            unset($attributes[$keyName]);
+        }
+
+        return parent::fill($attributes);
     }
 
     /**
