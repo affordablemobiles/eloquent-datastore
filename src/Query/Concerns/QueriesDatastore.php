@@ -52,27 +52,35 @@ trait QueriesDatastore
                 }
             }
 
-            if (\is_array($key)) {
-                $key = array_map(fn ($id) => $this->getKey($id), $key);
+            // --- Logging Setup ---
+            $logQuery    = 'datastore:lookup'.(\is_array($key) ? 'Batch' : '');
+            $logBindings = [
+                'keys'    => \is_array($key) ? array_map(static fn (Key $k) => $k->path(), $key) : $key->path(),
+                'options' => $clientOptions,
+            ];
+            // --- End Logging Setup ---
+
+            return $this->connection->runWithLogging($logQuery, $logBindings, function () use ($key, $clientOptions) {
+                if (\is_array($key)) {
+                    $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                        [$this->getClient(), 'lookupBatch'],
+                        [$key, $clientOptions],
+                    );
+
+                    return array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
+                }
 
                 $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
-                    [$this->getClient(), 'lookupBatch'],
+                    [$this->getClient(), 'lookup'],
                     [$key, $clientOptions],
                 );
 
-                return array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
-            }
+                if (!$result || empty($result)) {
+                    return null;
+                }
 
-            $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
-                [$this->getClient(), 'lookup'],
-                [$key, $clientOptions],
-            );
-
-            if (!$result || empty($result)) {
-                return null;
-            }
-
-            return $this->processor->processSingleResult($this, $result);
+                return $this->processor->processSingleResult($this, $result);
+            });
         });
     }
 
@@ -130,7 +138,27 @@ trait QueriesDatastore
                 }
             }
 
-            $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query, $this->getClientOptions()]);
+            // --- Logging Setup ---
+            $logQuery    = 'datastore:runQuery';
+            $logBindings = [
+                'kind'       => $this->from,
+                'projection' => $this->columns,
+                'wheres'     => $this->wheres,
+                'orders'     => $this->orders,
+                'limit'      => $this->limit,
+                'offset'     => $this->offset,
+                'ancestor'   => $this->ancestor instanceof Key ? $this->ancestor->path() : false,
+                'keysOnly'   => $this->keysOnly,
+                'distinctOn' => $this->distinct,
+                'options'    => $this->getClientOptions(),
+            ];
+            // --- End Logging Setup ---
+
+            $results = $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                [$this->getClient(), 'runQuery'],
+                [$query, $this->getClientOptions()]
+            ));
+
             $results         = $this->processor->processResults($this, $results, $this->ancestor);
             $this->endCursor = $results['cursor'];
 
@@ -197,7 +225,17 @@ trait QueriesDatastore
             }
         }
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'deleteBatch'], [$keys]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:deleteBatch';
+        $logBindings = [
+            'keys' => array_map(static fn (Key $k) => $k->path(), $keys),
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'deleteBatch'],
+            [$keys]
+        ));
     }
 
     public function insert(array $values, $options = [])
@@ -250,7 +288,20 @@ trait QueriesDatastore
             $entities[] = $this->getClient()->entity($key, $value, $options);
         }
 
-        return false !== (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insertBatch'], [$entities]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:insertBatch';
+        $logBindings = [
+            'count' => \count($entities),
+            'keys'  => array_map(static fn ($e) => $e->key()->path(), $entities),
+        ];
+        // --- End Logging Setup ---
+
+        $result = $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'insertBatch'],
+            [$entities]
+        ));
+
+        return false !== $result;
     }
 
     /**
@@ -281,7 +332,17 @@ trait QueriesDatastore
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:insert';
+        $logBindings = [
+            'key' => $entity->key()->path(), // Will be incomplete
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'insert'],
+            [$entity]
+        ));
     }
 
     public function _upsert(array $values, $keys, $options = [])
@@ -326,7 +387,18 @@ trait QueriesDatastore
             }
         }
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'upsertBatch'], [$entities]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:upsertBatch';
+        $logBindings = [
+            'count' => \count($entities),
+            'keys'  => array_map(static fn ($e) => $e->key()->path(), $entities),
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'upsertBatch'],
+            [$entities]
+        ));
     }
 
     /**
