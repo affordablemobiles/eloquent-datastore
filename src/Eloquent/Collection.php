@@ -61,15 +61,15 @@ class Collection extends BaseCollection
         //  in the query might not match our source collection (shorter array length),
         //  as we're only inserting ones that are dirty.
         $this->map(static function ($entity, $index) use (&$empty, $entities, $resultKeys): void {
-            $id = null;
+            $key = null;
 
             if (empty($entities[$index])) {
                 ++$empty;
             } else {
-                $id = $resultKeys[$index - $empty]->pathEndIdentifier();
+                $key = $resultKeys[$index - $empty];
             }
 
-            $entity->finishBulkUpsert($id);
+            $entity->finishBulkUpsert($key);
         });
 
         return true;
@@ -99,7 +99,9 @@ class Collection extends BaseCollection
         // which includes the necessary ancestor path for descendants.
         $keys = $this->map(static fn ($model) => $model->getKey())->all();
 
-        return $model->newModelQuery()->toBase()->delete($keys);
+        $model->newModelQuery()->toBase()->delete($keys);
+
+        return true;
     }
 
     protected function prepareBulkQuery()

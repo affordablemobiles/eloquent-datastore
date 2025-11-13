@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AffordableMobiles\EloquentDatastore\Eloquent\Concerns;
 
 use AffordableMobiles\EloquentDatastore\Query\Builder as QueryBuilder;
+use Google\Cloud\Datastore\Key;
 use Illuminate\Database\Eloquent\Collection;
 use Rennokki\QueryCache\Traits\QueryCacheable as ParentQueryCacheable;
 
@@ -36,13 +37,13 @@ trait QueryCacheable
     /**
      * Get a cache tag identifying a single record by ID.
      *
-     * @param null|int|Key|string $id the scalar ID or full Key object
+     * @param null|Key $id the scalar ID or full Key object
      */
-    public function getCacheTagForFind($id = null): string
+    public function getCacheTagForFind(?Key $id = null): string
     {
         $key = null;
 
-        if ($id instanceof \Google\Cloud\Datastore\Key) {
+        if ($id instanceof Key) {
             // We were given a full Key object (e.g., from find(Key $key))
             $key = $id;
         } elseif (null !== $id) {
@@ -81,7 +82,7 @@ trait QueryCacheable
             $this->getCacheTagForFind($keyObject),
         ])->recacheFindQuery(
             $keyObject,
-            $this->attributes
+            array_merge($this->attributes, ['id' => $this->getDatastoreKeyIdentifier()]),
         );
     }
 
