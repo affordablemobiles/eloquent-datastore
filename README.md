@@ -136,6 +136,72 @@ $user = DB::table('users')->where('id', 'my-uuid-string')->first();
 $user = DB::table('users')->where('uuid', 'my-uuid-string')->first();
 ```
 
+## Caching & Performance
+
+This package automatically integrates with `laravel-eloquent-query-cache` to cache results. By default, caching is `opt-in` per model. To enable it, add the `$cacheFor` property to your model:
+
+```php
+class User extends Model
+{
+    public $cacheFor = 3600; // Cache queries for 1 hour
+    // ...
+}
+```
+
+### Smart Lookup Optimization
+
+Google Datastore "Lookups" (retrieving by Key) are significantly faster, cheaper, and more consistent than "Queries" (scanning indexes).
+
+This driver automatically optimizes standard Eloquent queries into Datastore Lookups whenever possible. If you filter by the model's primary key (e.g., `id`, `uuid`, or `__key__`), the driver converts the operation into a direct `lookup()` call internally. This ensures that these operations hit the cache and use the most efficient Datastore operation.
+
+### Cached & Optimized Operations:
+
+The following operations are automatically converted to Lookups and **will use the cache**:
+
+* `Model::find($id)`
+* `Model::findOrFail($id)`
+* `Model::where('id', $id)->first()`
+* `Model::where('uuid', $uuid)->get()` (assuming 'uuid' is your primary key)
+* `$user->posts()->find($postId)` (Relation lookups - correctly handles ancestor keys)
+
+### Uncached Operations:
+
+Complex queries that require an index scan are **not** cached by default (to prevent cache explosion and stale data issues with ranges).
+
+* `Model::where('email', 'test@example.com')->first()`
+* `Model::where('age', '>', 18)->get()`
+* `Model::all()`
+
+### Key Normalization
+
+Datastore IDs can be either integers or strings. To ensure consistent caching and prevent misses, this driver automatically normalizes all IDs in cache keys and tags to **strings**. This means you do not need to worry about casting IDs (e.g. `(int) $id`) when interacting with the cache; the driver handles it for you.
+
+## Safety & Limitations
+
+### Partial Updates Protection
+
+Datastore's `upsert` operation replaces the entire entity. This poses a risk if you fetch a partial model (e.g., using `select()` or `keysOnly()`) and then try to `save()` it, as you would accidentally delete all the attributes you didn't select.
+
+To prevent data loss, this driver **blocks saving of partial models**.
+
+```php
+// Fetch only the name
+$user = User::select('name')->find(1);
+$user->name = 'New Name';
+
+// ERROR: Throws LogicException
+// "Cannot save a partial model... saving it would overwrite the full entity..."
+$user->save(); 
+```
+
+If you need to update a record, ensure you fetch the full entity first:
+
+```php
+$user = User::find(1); // Fetches all columns
+$user->name = 'New Name';
+$user->save(); // OK
+```
+
 ## Tested Builder Functions
 - [x] `connection`
 - [x] `table`
