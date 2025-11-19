@@ -69,6 +69,8 @@ final class QueryBuilderTest extends TestCase
         User::create(['name' => 'Jane', 'email' => 'jane@example.com']);
         User::create(['name' => 'John', 'email' => 'john2@example.com']);
 
+        sleep(1);
+
         $distinctNames = User::distinct('name')->pluck('name');
 
         self::assertCount(2, $distinctNames);
@@ -90,6 +92,8 @@ final class QueryBuilderTest extends TestCase
     {
         User::create(['name' => 'User 1']);
         User::create(['name' => 'User 2']);
+
+        sleep(1);
 
         $results = User::orderBy('name')->lazy(1);
         $names   = [];
