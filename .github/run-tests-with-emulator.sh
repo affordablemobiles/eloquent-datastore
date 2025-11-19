@@ -13,7 +13,7 @@ cleanup() {
     # Check if process exists before killing
     if kill -0 $EMULATOR_PID 2>/dev/null; then
       kill $EMULATOR_PID
-      wait $EMULATOR_PID 2>/dev/null
+      wait $EMULATOR_PID 2>/dev/null || true
     else
       echo "Emulator process (PID $EMULATOR_PID) already stopped."
     fi
