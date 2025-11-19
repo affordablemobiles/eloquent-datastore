@@ -56,3 +56,10 @@ echo "Running PHPUnit tests..."
 # If it fails, 'set -e' will cause the script to exit, which triggers the 'trap'.
 # The exit code of phpunit will be the exit code of the script.
 vendor/bin/phpunit --configuration phpunit.xml
+# Capture the exit code of PHPUnit (0 = pass, 1 = fail)
+TEST_EXIT_CODE=$?
+
+# 5. Exit explicitly
+# This triggers the 'EXIT' trap defined above, killing the emulator.
+# The script will then return TEST_EXIT_CODE to GitHub Actions.
+exit $TEST_EXIT_CODE
