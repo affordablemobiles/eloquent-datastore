@@ -21,8 +21,7 @@ class TestDatastoreClient extends DatastoreClient
         $result = parent::lookupBatch($keys, $options);
 
         // 2. Check if we are in the emulator
-        $isEmulator = (bool) getenv('DATASTORE_EMULATOR_HOST');
-        if (!$isEmulator) {
+        if (!$this->isEmulator()) {
             return $result; // In production, do nothing.
         }
 
@@ -43,6 +42,54 @@ class TestDatastoreClient extends DatastoreClient
         }
 
         // 5. Return the corrected and shuffled result
+        return $result;
+    }
+
+    /**
+     * Insert multiple entities.
+     * Overridden to inject a sleep for the emulator.
+     */
+    public function insertBatch(array $entities, array $options = [])
+    {
+        $result = parent::insertBatch($entities, $options);
+        $this->sleepIfEmulator();
+
+        return $result;
+    }
+
+    /**
+     * Update multiple entities.
+     * Overridden to inject a sleep for the emulator.
+     */
+    public function updateBatch(array $entities, array $options = [])
+    {
+        $result = parent::updateBatch($entities, $options);
+        $this->sleepIfEmulator();
+
+        return $result;
+    }
+
+    /**
+     * Upsert multiple entities.
+     * Overridden to inject a sleep for the emulator.
+     */
+    public function upsertBatch(array $entities, array $options = [])
+    {
+        $result = parent::upsertBatch($entities, $options);
+        $this->sleepIfEmulator();
+
+        return $result;
+    }
+
+    /**
+     * Delete multiple entities.
+     * Overridden to inject a sleep for the emulator.
+     */
+    public function deleteBatch(array $keys, array $options = []): array
+    {
+        $result = parent::deleteBatch($keys, $options);
+        $this->sleepIfEmulator();
+
         return $result;
     }
 
@@ -72,5 +119,23 @@ class TestDatastoreClient extends DatastoreClient
         }
 
         return $entity;
+    }
+
+    /**
+     * Check if the Datastore Emulator is being used.
+     */
+    private function isEmulator(): bool
+    {
+        return (bool) getenv('DATASTORE_EMULATOR_HOST');
+    }
+
+    /**
+     * Pause execution if running in the emulator to allow for eventual consistency.
+     */
+    private function sleepIfEmulator(): void
+    {
+        if ($this->isEmulator()) {
+            sleep(1);
+        }
     }
 }
