@@ -59,9 +59,7 @@ class TestDatastoreClient extends DatastoreClient
         if (1 === \count($paths) && '__key__' === $paths[0]) {
             $class = \get_class($entity);
 
-            return new $class($entity->key(), [], [
-                'excludeFromIndexes' => $entity->excludeFromIndexes(),
-            ]);
+            return new $class($entity->key(), [], []);
         }
 
         // Case 2: Standard projection
