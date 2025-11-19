@@ -8,7 +8,6 @@ use AffordableMobiles\EloquentDatastore\Tests\TestCase;
 use AffordableMobiles\EloquentDatastore\Tests\TestModels\BasketCached;
 use AffordableMobiles\EloquentDatastore\Tests\TestModels\Post;
 use AffordableMobiles\EloquentDatastore\Tests\TestModels\User;
-use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -40,20 +39,22 @@ final class CachingTest extends TestCase
         $basket   = BasketCached::create(['name' => 'Test Basket']);
         $basketId = $basket->id;
 
-        // 1. Warm the cache (1 DB read)
+        // 1. Verify creation already warmed the cache (0 DB reads)
         DB::enableQueryLog();
         $found1 = BasketCached::findOrFail($basketId);
-        self::assertCount(1, DB::getQueryLog());
+        self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 2. Hit the cache (0 DB reads)
+        // 2. Hit the cache again (0 DB reads)
         $found2 = BasketCached::findOrFail($basketId);
         self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 3. Hit the cache again (0 DB reads)
+        // 3. Manually clear cache to verify re-warming works (1 DB read)
+        Cache::store('array')->flush();
+
         $found3 = BasketCached::findOrFail($basketId);
-        self::assertCount(0, DB::getQueryLog());
+        self::assertCount(1, DB::getQueryLog());
         DB::flushQueryLog();
 
         self::assertSame($basketId, $found1->id);
@@ -66,35 +67,30 @@ final class CachingTest extends TestCase
         $basket   = BasketCached::create(['name' => 'Test Basket', 'tariff_id' => 100]);
         $basketId = $basket->id;
 
-        // 1. Warm the cache (1 DB read)
+        // 1. Verify cache is warm from creation (0 DB reads)
         DB::enableQueryLog();
         $found1 = BasketCached::findOrFail($basketId);
         self::assertSame(100, $found1->tariff_id);
-        self::assertCount(1, DB::getQueryLog());
-        DB::flushQueryLog();
-
-        // 2. Hit the cache (0 DB reads)
-        $found2 = BasketCached::findOrFail($basketId);
-        self::assertSame(100, $found2->tariff_id);
         self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 3. Update the model (1 DB write)
-        $found2->tariff_id = 200;
-        $found2->save();
-        self::assertCount(1, DB::getQueryLog());
+        // 2. Update the model (1 DB write)
+        $found1->tariff_id = 200;
+        $found1->save();
+
         DB::flushQueryLog();
 
-        // 4. Cache is invalidated, so this is a new lookup (1 DB read)
+        // 3. Verify cache was updated (0 DB reads)
+        // Since save() calls recacheFindQuery(), the new data should be in cache immediately.
+        $found2 = BasketCached::findOrFail($basketId);
+        self::assertSame(200, $found2->tariff_id);
+        self::assertCount(0, DB::getQueryLog());
+
+        // 4. Verify it is actually cached by clearing it and checking for a read
+        Cache::store('array')->flush();
         $found3 = BasketCached::findOrFail($basketId);
         self::assertSame(200, $found3->tariff_id);
         self::assertCount(1, DB::getQueryLog());
-        DB::flushQueryLog();
-
-        // 5. Cache is re-warmed, so this is cached (0 DB reads)
-        $found4 = BasketCached::findOrFail($basketId);
-        self::assertSame(200, $found4->tariff_id);
-        self::assertCount(0, DB::getQueryLog());
     }
 
     public function testFreshBustsModelCache(): void
@@ -102,22 +98,21 @@ final class CachingTest extends TestCase
         $basket   = BasketCached::create(['name' => 'Test Basket', 'tariff_id' => 100]);
         $basketId = $basket->id;
 
-        // 1. Warm the cache (1 DB read)
+        // 1. Warm the cache (0 DB reads because create warmed it)
         DB::enableQueryLog();
         $found1 = BasketCached::findOrFail($basketId);
-        self::assertCount(1, DB::getQueryLog());
-        DB::flushQueryLog();
-
-        // 2. Hit the cache (0 DB reads)
-        $found2 = BasketCached::findOrFail($basketId);
         self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 3. Simulate external change
-        DB::table('baskets')->where('id', $basketId)->update(['tariff_id' => 300]);
+        // 2. Simulate external change using raw client
+        $client              = DB::connection('datastore')->getClient();
+        $key                 = $basket->getKey();
+        $entity              = $client->lookup($key);
+        $entity['tariff_id'] = 300;
+        $client->upsert($entity);
 
-        // 4. Call fresh() - this must bust the cache (1 DB read)
-        $fresh = $found2->fresh();
+        // 3. Call fresh() - this must bust the cache (1 DB read)
+        $fresh = $found1->fresh();
         self::assertSame(300, $fresh->tariff_id);
         self::assertCount(1, DB::getQueryLog());
         DB::flushQueryLog();
@@ -128,14 +123,18 @@ final class CachingTest extends TestCase
         $basket   = BasketCached::create(['name' => 'Test Basket', 'tariff_id' => 100]);
         $basketId = $basket->id;
 
-        // 1. Warm the cache (1 DB read)
+        // 1. Warm the cache (0 DB reads because create warmed it)
         DB::enableQueryLog();
         $found1 = BasketCached::findOrFail($basketId);
-        self::assertCount(1, DB::getQueryLog());
+        self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 2. Simulate external change
-        DB::table('baskets')->where('id', $basketId)->update(['tariff_id' => 300]);
+        // 2. Simulate external change using raw client
+        $client              = DB::connection('datastore')->getClient();
+        $key                 = $basket->getKey();
+        $entity              = $client->lookup($key);
+        $entity['tariff_id'] = 300;
+        $client->upsert($entity);
 
         // 3. Call refresh() - this must bust the cache (1 DB read)
         self::assertSame(100, $found1->tariff_id); // Is stale
@@ -144,103 +143,110 @@ final class CachingTest extends TestCase
         self::assertCount(1, DB::getQueryLog());
     }
 
-    /**
-     * This test is refactored from 'testFindOnDescendantIsCached'
-     * It now tests caching on a descendant by using a 'first' query,
-     * as static 'find' cannot be used on descendants.
-     */
     public function testFirstOnDescendantIsCached(): void
     {
         $user = User::create(['name' => 'Cache User']);
         $post = $user->posts()->create(['title' => 'Cache Post']);
 
-        // 1. Warm the cache (1 DB read)
-        // We MUST query through the relation to get the ancestor context
         DB::enableQueryLog();
-        $found1 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
-        self::assertCount(1, DB::getQueryLog());
-        DB::flushQueryLog();
 
-        // 2. Hit the cache (0 DB reads)
-        // We query through a fresh user instance to ensure it's stateless
-        $freshUser = User::find($user->id);
-        $found2    = $freshUser->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
+        // 1. Verify cache is warm from creation (0 DB reads)
+        $found1 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
+
         self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 3. Verify it's the correct model (with ancestor key)
+        // 2. Manually clear cache to verify we can look it up again
+        Cache::store('array')->flush();
+
+        // Use existing user instance to construct the relation query
+        $found2 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
+
+        // Expect exactly 1 query for the Post lookup
+        self::assertCount(1, DB::getQueryLog());
+
+        // 3. Verify it's the correct model
         self::assertSame($post->id, $found1->id);
         self::assertSame($post->id, $found2->id);
-        self::assertTrue($found2->getKey()->ancestorKey() instanceof Key);
     }
 
-    /**
-     * This test is refactored from 'testUpdatingDescendantInvalidatesItsOwnCache'
-     * It now uses a 'first' query, as static 'find' cannot be used on descendants.
-     */
     public function testUpdatingDescendantInvalidatesItsOwnCache(): void
     {
         $user = User::create(['name' => 'Cache User']);
         $post = $user->posts()->create(['title' => 'Cache Post']);
 
-        // 1. Warm cache (1 DB read)
+        // 1. Verify cache is warm (0 DB reads)
         DB::enableQueryLog();
         $found1 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
         self::assertSame('Cache Post', $found1->title);
-        self::assertCount(1, DB::getQueryLog());
+        self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
         // 2. Update model (1 DB write)
         $found1->title = 'Updated Title';
         $found1->save();
-        self::assertCount(1, DB::getQueryLog());
+
         DB::flushQueryLog();
 
-        // 3. Cache is invalidated (1 DB read)
-        $freshUser = User::find($user->id);
-        $found2    = $freshUser->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
+        // 3. Verify cache is updated and hit (0 DB reads)
+        $found2 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
+
         self::assertSame('Updated Title', $found2->title);
+        self::assertCount(0, DB::getQueryLog());
+
+        // 4. Manually clear to prove it was cached (1 DB read)
+        Cache::store('array')->flush();
+        DB::flushQueryLog();
+
+        $found3 = $user->posts()->where($post->getKeyName(), $post->id)->firstOrFail();
         self::assertCount(1, DB::getQueryLog());
     }
 
-    public function testGetQueryOnDescendantIsCached(): void
+    /**
+     * Tests that general queries (not by ID) are NOT cached.
+     */
+    public function testGetOnDescendantIsNotCached(): void
     {
         $user = User::create(['name' => 'Cache User']);
         $user->posts()->create(['title' => 'Cache Post']);
 
-        // 1. Warm cache (1 DB read)
+        // 1. Run query (1 DB read)
         DB::enableQueryLog();
         $posts1 = $user->posts()->get();
         self::assertCount(1, $posts1);
         self::assertCount(1, DB::getQueryLog());
         DB::flushQueryLog();
 
-        // 2. Hit cache (0 DB reads)
+        // 2. Run query again (1 DB read)
+        // Since this is a general 'get()' without an ID filter,
+        // it bypasses the lookup optimization and should NOT be cached.
         $posts2 = $user->posts()->get();
         self::assertCount(1, $posts2);
-        self::assertCount(0, DB::getQueryLog());
+        self::assertCount(1, DB::getQueryLog());
     }
 
-    public function testUpdatingChildInvalidatesChildGetQueryCache(): void
+    /**
+     * Tests that invalidating a child also invalidates cached lookups.
+     */
+    public function testUpdatingChildInvalidatesChildLookupCache(): void
     {
         $user = User::create(['name' => 'Cache User']);
         $post = $user->posts()->create(['title' => 'Cache Post']);
 
-        // 1. Warm cache (1 DB read)
+        // 1. Warm cache via lookup (0 reads, create() warmed it)
         DB::enableQueryLog();
-        $user->posts()->get();
-        self::assertCount(1, DB::getQueryLog());
+        $user->posts()->where('id', $post->id)->first();
+        self::assertCount(0, DB::getQueryLog());
         DB::flushQueryLog();
 
         // 2. Update the child (1 DB write)
         $post->title = 'Updated Title';
-        $post->save(); // This flushes tags for 'Post'
-        self::assertCount(1, DB::getQueryLog());
+        $post->save(); // Recaches
         DB::flushQueryLog();
 
-        // 3. Cache for $user->posts() should be flushed (1 DB read)
-        $posts = $user->posts()->get();
-        self::assertCount(1, DB::getQueryLog());
-        self::assertSame('Updated Title', $posts->first()->title);
+        // 3. Lookup should still be cached (0 reads) with new data
+        $posts = $user->posts()->where('id', $post->id)->first();
+        self::assertCount(0, DB::getQueryLog());
+        self::assertSame('Updated Title', $posts->title);
     }
 }

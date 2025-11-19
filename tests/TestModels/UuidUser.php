@@ -19,7 +19,7 @@ class UuidUser extends Model
     public $incrementing = false;
 
     public $timestamps = false;
-    
+
     protected $table   = 'uuid_users';
 
     /**

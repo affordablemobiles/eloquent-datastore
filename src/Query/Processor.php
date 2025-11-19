@@ -52,8 +52,11 @@ class Processor extends BaseProcessor
             return [];
         }
 
-        $entity['id']         = $result->key()->path()[0]['name'] ?? $result->key()->path()[0]['id'];
-        $entity['_key']       = $result->key()->path()[0];
+        $path = $result->key()->path();
+        $end  = end($path);
+
+        $entity['id']         = $end['name'] ?? $end['id'];
+        $entity['_key']       = $end;
         $entity['_keys']      = $result->key()->path();
         $entity['__key__']    = $result->key();
         $entity['__parent__'] = self::getParentKey($result->key());
@@ -90,5 +93,25 @@ class Processor extends BaseProcessor
 
         // Create the new parent Key object.
         return new Key($projectId, $options);
+    }
+
+    /**
+     * Normalize a key path array to ensure consistent caching.
+     * Casts both 'id' and 'name' components to strings.
+     */
+    public static function normalizeKeyPath(array $path): array
+    {
+        return array_map(static function ($segment) {
+            // Cast 'id' (numeric ID) to string
+            if (isset($segment['id'])) {
+                $segment['id'] = (string) $segment['id'];
+            }
+            // Cast 'name' (string ID) to string, just in case it's numeric-like
+            if (isset($segment['name'])) {
+                $segment['name'] = (string) $segment['name'];
+            }
+
+            return $segment;
+        }, $path);
     }
 }

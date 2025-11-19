@@ -40,6 +40,13 @@ abstract class Model extends BaseModel
     public $cacheDriver = 'array';
 
     /**
+     * Indicates if the model was retrieved with a partial set of columns (projection).
+     *
+     * @var bool
+     */
+    public $isPartial = false;
+
+    /**
      * Invalidate the cache automatically
      * upon update in the database.
      *
@@ -133,7 +140,7 @@ abstract class Model extends BaseModel
                     'namespaceId'    => $this->namespace,
                 ]
             );
-            // Only apply parent if we are building a key from an ID.
+
             if (isset($this->attributes['__parent__'])) {
                 $key->ancestorKey($this->attributes['__parent__']);
             }
@@ -292,6 +299,14 @@ abstract class Model extends BaseModel
      */
     public function save(array $options = [])
     {
+        if ($this->isPartial) {
+            throw new \LogicException(
+                'Cannot save a partial model. This entity was retrieved with a projection (select/keysOnly) '
+                .'and saving it would overwrite the full entity with partial data, causing data loss. '
+                .'Please retrieve the full entity using find() or get() without select() constraints before saving.'
+            );
+        }
+
         $this->mergeAttributesFromCachedCasts();
 
         $query = $this->newModelQuery();
@@ -538,7 +553,7 @@ abstract class Model extends BaseModel
         $keyName = $this->getKeyName();
 
         if (isset($attributes[$keyName])) {
-            $this->setRawAttributes([$keyName => $attributes[$keyName]]);
+            $this->setAttribute($keyName, $attributes[$keyName]);
 
             unset($attributes[$keyName]);
         }
@@ -709,7 +724,10 @@ abstract class Model extends BaseModel
         $key = $this->attributes['__key__'] ?? null;
 
         if ($key instanceof Key) {
-            return $key->path()[0]['name'] ?? $key->path()[0]['id'] ?? null;
+            $path = $key->path();
+            $end  = end($path);
+
+            return $end['name'] ?? $end['id'] ?? null;
         }
 
         return null;

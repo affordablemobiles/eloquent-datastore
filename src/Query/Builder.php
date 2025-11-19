@@ -80,6 +80,19 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
         return $this;
     }
 
+    public function isKeysOnly(): bool
+    {
+        return $this->keysOnly;
+    }
+
+    /**
+     * set ancestor key.
+     */
+    public function getAncestor(): ?Key
+    {
+        return $this->ancestor ?: null;
+    }
+
     /**
      * set ancestor key.
      */
@@ -105,6 +118,10 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
+        if (\is_string($column) && 'id' === $column) {
+            $column = '__key__';
+        }
+
         if (\is_string($column) && '__key__' === $column) {
             [$value, $operator] = $this->prepareValueAndOperator(
                 $value,

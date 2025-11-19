@@ -89,6 +89,51 @@ class Builder extends EloquentBuilder
         return $this;
     }
 
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param array|string $columns
+     *
+     * @return Collection|static[]
+     */
+    public function get($columns = ['*'])
+    {
+        $builder = $this->applyScopes();
+
+        $wheres = $builder->getQuery()->wheres;
+
+        // OPTIMIZATION: Convert single Key lookup to find() (Cached)
+        if (
+            1            === \count($wheres)
+            && 'Basic'   === $wheres[0]['type']
+            && '__key__' === $wheres[0]['column']
+            && '='       === $wheres[0]['operator']
+            && $wheres[0]['value'] instanceof Key
+        ) {
+            $ancestor = $builder->getQuery()->getAncestor();
+            $key      = $wheres[0]['value'];
+
+            $cleanBuilder = $this->getModel()->newQuery();
+
+            if ($ancestor) {
+                $cleanBuilder->hasAncestor($ancestor);
+            }
+            if ($builder->getQuery()->isKeysOnly()) {
+                $cleanBuilder->keys();
+            }
+
+            $result = $cleanBuilder->find($key, $columns);
+
+            if ($result instanceof Model) {
+                return $this->getModel()->newCollection([$result]);
+            }
+
+            return $this->getModel()->newCollection();
+        }
+
+        return parent::get($columns);
+    }
+
     public function find($id, $columns = ['*'])
     {
         if (null === $id) {
@@ -282,31 +327,63 @@ class Builder extends EloquentBuilder
         }
 
         if (\is_array($id) || $id instanceof Arrayable) {
-            $keys = [];
-            foreach ($id as $rawId) {
-                $keys[] = $this->model->getKey($rawId);
-            }
+            $id = $id instanceof Arrayable ? $id->toArray() : $id;
 
             // Datastore does not support 'IN' queries on the key.
             // This is a limitation. We can only support a single key.
-            if (\count($keys) > 1) {
+            if (\count($id) > 1) {
                 throw new \LogicException('Datastore does not support WHERE KEY IN (...) queries. Use lookup() instead.');
             }
 
-            if (empty($keys)) {
-                // Emulate a "where 1=0"
+            if (empty($id)) {
+                // Emulate a "where 1=0" by filtering on null
                 $this->query->where('__key__', '=', null, $boolean);
 
                 return $this;
             }
 
-            $this->query->where('__key__', '=', $keys[0], $boolean);
-
-            return $this;
+            $id = head($id);
         }
 
-        // Handle single raw IDs (e.g., '123' or 'uuid-string')
-        return $this->whereKey($this->model->getKey($id), $boolean);
+        $key = $this->model->getKey($id);
+
+        $this->query->where('__key__', '=', $key, $boolean);
+
+        return $this;
+    }
+
+    /**
+     * Create a collection of models from plain arrays.
+     *
+     * @return Collection<int, TModel>
+     */
+    public function hydrate(array $items)
+    {
+        $instance = $this->newModelInstance();
+
+        // Check if the query was a projection (partial load)
+        // If columns is set and not just '*', it's partial.
+        $isPartial = !empty($this->query->columns) && $this->query->columns !== ['*'];
+
+        // Also check if keysOnly mode was enabled on the underlying query builder
+        if ($this->query instanceof QueryBuilder && $this->query->isKeysOnly()) {
+            $isPartial = true;
+        }
+
+        return $instance->newCollection(array_map(static function ($item) use ($instance, $isPartial, $items) {
+            $model = $instance->newFromBuilder($item);
+
+            // Mark the model as partial so save() can block updates to prevent data loss
+            if ($isPartial) {
+                $model->isPartial = true;
+            }
+
+            if (\count($items) > 1) {
+                $model->preventsLazyLoading = Model::preventsLazyLoading();
+            }
+
+            return $model;
+        }, $items));
     }
 
     /**

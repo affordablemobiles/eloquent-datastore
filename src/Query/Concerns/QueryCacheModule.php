@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AffordableMobiles\EloquentDatastore\Query\Concerns;
 
+use AffordableMobiles\EloquentDatastore\Query\Processor;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Arr;
 use Rennokki\QueryCache\Traits\QueryCacheModule as ParentQueryCacheModule;
@@ -108,9 +109,8 @@ trait QueryCacheModule
             $this->columns = ['*'];
         }
 
-        $key   = $this->getCacheKey('find', $id);
-        $cache = $this->getCache();
-
+        $key      = $this->getCacheKey('find', $id);
+        $cache    = $this->getCache();
         $callback = static fn () => $attributes;
         $time     = $this->getCacheFor();
 
@@ -134,10 +134,15 @@ trait QueryCacheModule
         if ('find' === $method && null !== $id) {
             $id = $this->getKey($id);
 
-            // Serialize the full path for uniqueness, including ancestors.
-            $keyIdentifierString = 'key:'.json_encode($id->path());
+            $path = Processor::normalizeKeyPath($id->path());
+
+            $keyIdentifierString = 'key:'.json_encode($path);
         }
         // If method is not 'find', $id should be null, keep 'null' string.
+
+        $normalizedAncestor = $this->ancestor instanceof Key
+            ? Processor::normalizeKeyPath($this->ancestor->path())
+            : false;
 
         // Include the serialized key path string in the cache key.
         return $name.':'.$method.':'.$keyIdentifierString.':'.serialize([
@@ -145,7 +150,7 @@ trait QueryCacheModule
             $this->offset,
             $this->limit,
             $this->keysOnly,
-            $this->ancestor instanceof Key ? json_encode($this->ancestor->path()) : false, // Serialize ancestor too
+            $normalizedAncestor,
             $this->namespaceId,
             $this->startCursor,
             $this->distinct,

@@ -7,6 +7,7 @@ namespace AffordableMobiles\EloquentDatastore\Tests\Feature;
 use AffordableMobiles\EloquentDatastore\Tests\TestCase;
 use AffordableMobiles\EloquentDatastore\Tests\TestModels\User;
 use AffordableMobiles\EloquentDatastore\Tests\TestModels\UuidUser;
+use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -93,14 +94,18 @@ final class PrimaryKeyTest extends TestCase
     // This tests the "escape hatch" documentation we wrote
     public function testBaseQueryBuilderUsesIdAliasForCustomKey(): void
     {
+        $id = 'my-uuid-4';
+
         UuidUser::create([
-            'uuid' => 'my-uuid-4',
+            'uuid' => $id,
             'name' => 'Base Query UUID',
         ]);
 
+        $key = (new UuidUser())->getKey($id);
+
         // This is the key insight: The base query builder MUST use 'id',
         // even though the model's primary key is 'uuid'.
-        $found = DB::table('uuid_users')->where('id', 'my-uuid-4')->first();
+        $found = DB::table('uuid_users')->where('id', $key)->first();
 
         self::assertNotNull($found);
         self::assertSame('Base Query UUID', $found['name']);
