@@ -46,54 +46,6 @@ class TestDatastoreClient extends DatastoreClient
     }
 
     /**
-     * Insert multiple entities.
-     * Overridden to inject a sleep for the emulator.
-     */
-    public function insertBatch(array $entities, array $options = [])
-    {
-        $result = parent::insertBatch($entities, $options);
-        $this->sleepIfEmulator();
-
-        return $result;
-    }
-
-    /**
-     * Update multiple entities.
-     * Overridden to inject a sleep for the emulator.
-     */
-    public function updateBatch(array $entities, array $options = [])
-    {
-        $result = parent::updateBatch($entities, $options);
-        $this->sleepIfEmulator();
-
-        return $result;
-    }
-
-    /**
-     * Upsert multiple entities.
-     * Overridden to inject a sleep for the emulator.
-     */
-    public function upsertBatch(array $entities, array $options = [])
-    {
-        $result = parent::upsertBatch($entities, $options);
-        $this->sleepIfEmulator();
-
-        return $result;
-    }
-
-    /**
-     * Delete multiple entities.
-     * Overridden to inject a sleep for the emulator.
-     */
-    public function deleteBatch(array $keys, array $options = []): array
-    {
-        $result = parent::deleteBatch($keys, $options);
-        $this->sleepIfEmulator();
-
-        return $result;
-    }
-
-    /**
      * Manually filters an entity's properties to simulate
      * propertyMask behavior for the buggy emulator.
      */
@@ -127,15 +79,5 @@ class TestDatastoreClient extends DatastoreClient
     private function isEmulator(): bool
     {
         return (bool) getenv('DATASTORE_EMULATOR_HOST');
-    }
-
-    /**
-     * Pause execution if running in the emulator to allow for eventual consistency.
-     */
-    private function sleepIfEmulator(): void
-    {
-        if ($this->isEmulator()) {
-            sleep(1);
-        }
     }
 }

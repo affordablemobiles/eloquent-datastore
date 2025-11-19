@@ -27,6 +27,7 @@ echo "Starting Datastore emulator..."
 gcloud beta emulators datastore start \
   --project=test-project \
   --host-port=localhost:8081 \
+  --use-firestore-in-datastore-mode \
   --no-store-on-disk 2> /dev/null &
 
 # Store the Process ID (PID) of the emulator
