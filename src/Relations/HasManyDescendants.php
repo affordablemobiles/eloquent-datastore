@@ -24,7 +24,7 @@ class HasManyDescendants extends Relation
         if (null === ($instance = $this->find($id, $columns))) {
             $instance = $this->related->newInstance();
 
-            $this->setForeignAttributesForCreate($instance);
+            $this->setForeignAttributes($instance);
         }
 
         return $instance;
@@ -40,7 +40,7 @@ class HasManyDescendants extends Relation
         if (null === ($instance = $this->where($attributes)->first())) {
             $instance = $this->related->newInstance(array_merge($attributes, $values));
 
-            $this->setForeignAttributesForCreate($instance);
+            $this->setForeignAttributes($instance);
         }
 
         return $instance;
@@ -83,7 +83,7 @@ class HasManyDescendants extends Relation
      */
     public function save(Model $model)
     {
-        $this->setForeignAttributesForCreate($model);
+        $this->setForeignAttributes($model);
 
         return $model->save() ? $model : false;
     }
@@ -112,7 +112,7 @@ class HasManyDescendants extends Relation
         foreach ($models as &$model) {
             // Only set the attributes here,
             // don't actually save individually...
-            $this->setForeignAttributesForCreate($model);
+            $this->setForeignAttributes($model);
         }
 
         // Perform a bulk upsert for better performance
@@ -131,7 +131,7 @@ class HasManyDescendants extends Relation
     public function create(array $attributes = [])
     {
         return tap($this->related->newInstance($attributes), function ($instance): void {
-            $this->setForeignAttributesForCreate($instance);
+            $this->setForeignAttributes($instance);
 
             $instance->save();
         });
@@ -207,7 +207,7 @@ class HasManyDescendants extends Relation
     public function make(array $attributes = []): Model
     {
         return tap($this->related->newInstance($attributes), function ($instance): void {
-            $this->setForeignAttributesForCreate($instance);
+            $this->setForeignAttributes($instance);
         });
     }
 
@@ -338,7 +338,7 @@ class HasManyDescendants extends Relation
      *
      * @param \Illuminate\Database\Eloquent\Model $model
      */
-    protected function setForeignAttributesForCreate(Model $model): void
+    protected function setForeignAttributes(Model $model): void
     {
         if ($model->exists) {
             throw new \LogicException("Can't change ancestor key on a saved model");

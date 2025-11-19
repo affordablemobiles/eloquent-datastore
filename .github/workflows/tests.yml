@@ -1,0 +1,49 @@
+name: PHPUnit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: Run PHPUnit Test Suite
+    runs-on: ubuntu-latest
+
+    # Use the specific PHP 8.3 Google Cloud Runtime image
+    # We must run as root to install system dependencies (gcloud)
+    container:
+      image: europe-west1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/php83:latest
+      options: --user root
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Composer
+        run: |
+          curl -sS https://getcomposer.org/installer -o composer-setup.php
+          php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          rm composer-setup.php
+
+      - name: Install gcloud CLI and Datastore Emulator
+        run: |
+          apt-get update -y
+          apt-get install -y apt-transport-https ca-certificates gnupg curl
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          apt-get update -y
+          # Install both the CLI and the datastore-emulator component
+          apt-get install -y google-cloud-cli google-cloud-sdk-datastore-emulator openjdk-21-jre-headless
+
+      - name: Install Composer Dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Make Test Runner Script Executable
+        run: chmod +x ./.github/run-tests-with-emulator.sh
+
+      - name: Run Tests
+        run: ./.github/run-tests-with-emulator.sh

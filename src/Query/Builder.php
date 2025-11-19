@@ -80,6 +80,19 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
         return $this;
     }
 
+    public function isKeysOnly(): bool
+    {
+        return $this->keysOnly;
+    }
+
+    /**
+     * set ancestor key.
+     */
+    public function getAncestor(): ?Key
+    {
+        return $this->ancestor ?: null;
+    }
+
     /**
      * set ancestor key.
      */
@@ -88,6 +101,40 @@ class Builder extends BaseBuilder implements QueryCacheModuleInterface
         $this->ancestor = $key;
 
         return $this;
+    }
+
+    /**
+     * Add a basic where clause to the query.
+     *
+     * Overridden to handle '__key__' columns automatically,
+     * applying ancestors.
+     *
+     * @param array|\Closure|string $column
+     * @param mixed                 $operator
+     * @param mixed                 $value
+     * @param string                $boolean
+     *
+     * @return $this
+     */
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if (\is_string($column) && 'id' === $column) {
+            $column = '__key__';
+        }
+
+        if (\is_string($column) && '__key__' === $column) {
+            [$value, $operator] = $this->prepareValueAndOperator(
+                $value,
+                $operator,
+                2 === \func_num_args()
+            );
+
+            if ($value instanceof Key && $this->ancestor instanceof Key) {
+                $value->ancestorKey($this->ancestor);
+            }
+        }
+
+        return parent::where($column, $operator, $value, $boolean);
     }
 
     /**

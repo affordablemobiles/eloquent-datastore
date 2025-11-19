@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AffordableMobiles\EloquentDatastore\Relations;
 
 use AffordableMobiles\EloquentDatastore\Eloquent\Model;
+use AffordableMobiles\EloquentDatastore\Query\Processor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -186,7 +187,7 @@ class BelongsToAncestor extends Relation
     public function addConstraints(): void
     {
         if (static::$constraints) {
-            $key = $this->getParentKey();
+            $key = Processor::getParentKey($this->parent->getKey());
             if (null !== $key) {
                 $query = $this->getRelationQuery();
 
@@ -265,36 +266,6 @@ class BelongsToAncestor extends Relation
     public function getForeignKeyName()
     {
         return '__key__';
-    }
-
-    /**
-     * Get the key value of the parent's local key.
-     *
-     * @return mixed
-     */
-    public function getParentKey()
-    {
-        // Get the key path from the parent model.
-        $keyPath = $this->parent->getKey()->path();
-
-        // Check we have more than just a single key
-        //  in the key path...
-        if (\count($keyPath) <= 1) {
-            return null;
-        }
-
-        // Return the 2nd to last element in the key path...
-        //  The direct ancestor key.
-        $keyData = $keyPath[\count($keyPath)-2];
-
-        $key = null;
-        if (isset($keyData['id'])) {
-            $key = $this->related->getKey($keyData['id']);
-        } else {
-            $key = $this->related->getKey($keyData['name']);
-        }
-
-        return $key;
     }
 
     /**
