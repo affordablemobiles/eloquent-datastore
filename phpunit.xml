@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    cacheResult="false"
 >
     <testsuites>
-        <testsuite name="Test Suite">
-            <directory suffix="Test.php">./tests</directory>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
-    <coverage processUncoveredFiles="true">
+    <source>
         <include>
-            <directory suffix=".php">./src</directory>
+            <directory>src</directory>
         </include>
-    </coverage>
+    </source>
+    <php>
+        <!-- This makes our 'datastore' connection the default -->
+        <env name="DB_CONNECTION" value="datastore"/>
+
+        <!--
+        These are the crucial variables for connecting to the
+        Google Cloud Datastore Emulator.
+        https/gcloud.dev/sdk/gcloud-reference/beta/emulators/datastore/start
+        -->
+        <env name="DATASTORE_EMULATOR_HOST" value="localhost:8081"/>
+        <env name="DATASTORE_PROJECT_ID" value="test-project"/>
+    </php>
 </phpunit>

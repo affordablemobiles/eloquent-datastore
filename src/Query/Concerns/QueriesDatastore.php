@@ -9,6 +9,7 @@ use AffordableMobiles\EloquentDatastore\Collection;
 use Google\Cloud\Core\ExponentialBackoff;
 use Google\Cloud\Datastore\Key;
 use Google\Cloud\Datastore\Query\Query;
+use Google\Cloud\Datastore\V1\PropertyMask;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Pagination\Cursor;
@@ -31,25 +32,55 @@ trait QueriesDatastore
                 $this->columns = [];
             }
 
-            if (\is_array($key)) {
-                $key = array_map(fn ($id) => $id instanceof Key ? $id : $this->getClient()->key($this->from, $id, $this->getClientOptions()), $key);
+            $clientOptions = [];
 
-                $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookupBatch'], [$key]);
+            // 1. Check for keysOnly first.
+            if ($this->keysOnly) {
+                $clientOptions['propertyMask'] = (new PropertyMask())
+                    ->setPaths(['__key__'])
+                ;
+            }
+            // 2. If not keysOnly, check for a user-defined projection
+            //    (which $this->columns now represents).
+            elseif (!empty($this->columns)) {
+                $properties = array_filter($this->columns, static fn ($col) => 'id' !== $col);
 
-                $result = array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
-
-                return empty($this->columns) ? $result : array_map(fn ($res) => Arr::only($res, Arr::wrap($this->columns)), $result);
+                if (!empty($properties)) {
+                    $clientOptions['propertyMask'] = (new PropertyMask())
+                        ->setPaths($properties)
+                    ;
+                }
             }
 
-            $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'lookup'], [$key]);
+            // --- Logging Setup ---
+            $logQuery    = 'datastore:lookup'.(\is_array($key) ? 'Batch' : '');
+            $logBindings = [
+                'keys'    => \is_array($key) ? array_map(static fn (Key $k) => $k->path(), $key) : $key->path(),
+                'options' => $clientOptions,
+            ];
+            // --- End Logging Setup ---
 
-            if (!$result || empty($result)) {
-                return null;
-            }
+            return $this->connection->runWithLogging($logQuery, $logBindings, function () use ($key, $clientOptions) {
+                if (\is_array($key)) {
+                    $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                        [$this->getClient(), 'lookupBatch'],
+                        [$key, $clientOptions],
+                    );
 
-            $result = $this->processor->processSingleResult($this, $result);
+                    return array_map(fn ($res) => $this->processor->processSingleResult($this, $res), $result['found']);
+                }
 
-            return empty($this->columns) ? $result : Arr::only($result, Arr::wrap($this->columns));
+                $result = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                    [$this->getClient(), 'lookup'],
+                    [$key, $clientOptions],
+                );
+
+                if (!$result || empty($result)) {
+                    return null;
+                }
+
+                return $this->processor->processSingleResult($this, $result);
+            });
         });
     }
 
@@ -107,7 +138,27 @@ trait QueriesDatastore
                 }
             }
 
-            $results         = (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'runQuery'], [$query, $this->getClientOptions()]);
+            // --- Logging Setup ---
+            $logQuery    = 'datastore:runQuery';
+            $logBindings = [
+                'kind'       => $this->from,
+                'projection' => $this->columns,
+                'wheres'     => $this->wheres,
+                'orders'     => $this->orders,
+                'limit'      => $this->limit,
+                'offset'     => $this->offset,
+                'ancestor'   => $this->ancestor instanceof Key ? $this->ancestor->path() : false,
+                'keysOnly'   => $this->keysOnly,
+                'distinctOn' => $this->distinct,
+                'options'    => $this->getClientOptions(),
+            ];
+            // --- End Logging Setup ---
+
+            $results = $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+                [$this->getClient(), 'runQuery'],
+                [$query, $this->getClientOptions()]
+            ));
+
             $results         = $this->processor->processResults($this, $results, $this->ancestor);
             $this->endCursor = $results['cursor'];
 
@@ -167,14 +218,24 @@ trait QueriesDatastore
                 $keys = Arr::wrap($key);
             } else {
                 if (\is_array($key)) {
-                    $keys = array_map(fn ($item) => $item instanceof Key ? $item : $this->getClient()->key($this->from, $item, $this->getClientOptions()), $key);
+                    $keys = array_map(fn ($id) => $this->getKey($id), $key);
                 } else {
-                    $keys = [$this->getClient()->key($this->from, $key, $this->getClientOptions())];
+                    $keys = [$this->getKey($key)];
                 }
             }
         }
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'deleteBatch'], [$keys]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:deleteBatch';
+        $logBindings = [
+            'keys' => array_map(static fn (Key $k) => $k->path(), $keys),
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'deleteBatch'],
+            [$keys]
+        ));
     }
 
     public function insert(array $values, $options = [])
@@ -211,7 +272,7 @@ trait QueriesDatastore
             $key = null;
 
             if (isset($value['id'])) {
-                $key = $this->getClient()->key($this->from, $value['id'], $this->getClientOptions() + [
+                $key = $this->getKey($value['id'], [
                     'identifierType' => Key::TYPE_NAME,
                 ]);
                 unset($value['id']);
@@ -221,13 +282,26 @@ trait QueriesDatastore
             }
 
             if (null === $key) {
-                $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
+                $key = $this->getKey(null);
             }
 
             $entities[] = $this->getClient()->entity($key, $value, $options);
         }
 
-        return false !== (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insertBatch'], [$entities]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:insertBatch';
+        $logBindings = [
+            'count' => \count($entities),
+            'keys'  => array_map(static fn ($e) => $e->key()->path(), $entities),
+        ];
+        // --- End Logging Setup ---
+
+        $result = $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'insertBatch'],
+            [$entities]
+        ));
+
+        return false !== $result;
     }
 
     /**
@@ -235,10 +309,8 @@ trait QueriesDatastore
      *
      * @param null|string $sequence
      * @param mixed       $options
-     *
-     * @return int
      */
-    public function insertGetId(array $values, $sequence = null, $options = []): string
+    public function insertGetId(array $values, $sequence = null, $options = []): Key
     {
         if (empty($this->from)) {
             throw new \LogicException('No kind/table specified');
@@ -255,12 +327,22 @@ trait QueriesDatastore
         }
 
         if (null === $key) {
-            $key = $this->getClient()->key($this->from, null, $this->getClientOptions());
+            $key = $this->getKey(null);
         }
 
         $entity = $this->getClient()->entity($key, $values, $options);
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'insert'], [$entity])->pathEndIdentifier();
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:insert';
+        $logBindings = [
+            'key' => $entity->key()->path(), // Will be incomplete
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'insert'],
+            [$entity]
+        ));
     }
 
     public function _upsert(array $values, $keys, $options = [])
@@ -305,7 +387,18 @@ trait QueriesDatastore
             }
         }
 
-        return (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute([$this->getClient(), 'upsertBatch'], [$entities]);
+        // --- Logging Setup ---
+        $logQuery    = 'datastore:upsertBatch';
+        $logBindings = [
+            'count' => \count($entities),
+            'keys'  => array_map(static fn ($e) => $e->key()->path(), $entities),
+        ];
+        // --- End Logging Setup ---
+
+        return $this->connection->runWithLogging($logQuery, $logBindings, fn () => (new ExponentialBackoff(6, [DatastoreClient::class, 'shouldRetry']))->execute(
+            [$this->getClient(), 'upsertBatch'],
+            [$entities]
+        ));
     }
 
     /**
@@ -1120,6 +1213,21 @@ trait QueriesDatastore
         throw new \LogicException('Not Implemented');
 
         return false;
+    }
+
+    protected function getKey($id = null, array $options = []): Key
+    {
+        if ($id instanceof Key) {
+            return $id;
+        }
+
+        $key = $this->getClient()->key($this->from, $id, $this->getClientOptions() + $options);
+
+        if ($this->ancestor instanceof Key) {
+            $key->ancestorKey($this->ancestor);
+        }
+
+        return $key;
     }
 
     protected function getClientOptions(): array

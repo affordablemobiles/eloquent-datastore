@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AffordableMobiles\EloquentDatastore\Query\Concerns;
 
+use AffordableMobiles\EloquentDatastore\Query\Processor;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Arr;
 use Rennokki\QueryCache\Traits\QueryCacheModule as ParentQueryCacheModule;
@@ -17,13 +18,22 @@ trait QueryCacheModule
     }
 
     /**
+     * Get the cache key.
+     * Overridden to accept a Key object for the $id parameter.
+     */
+    public function getCacheKey(string $method = 'get', ?Key $id = null): string
+    {
+        return $this->getCachePrefix().':'.$this->generatePlainCacheKey($method, $id);
+    }
+
+    /**
      * Get the cache from the current query.
      *
      * @param null|Key|string $id the Key object or scalar ID for find, null otherwise
      *
      * @return mixed
      */
-    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], null|Key|string $id = null)
+    public function getFromQueryCache(string $method = 'get', array $columns = ['*'], Key|string|null $id = null)
     {
         if (null === $this->columns) {
             $this->columns = $columns;
@@ -49,7 +59,7 @@ trait QueryCacheModule
      *
      * @return \Closure
      */
-    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], null|Key|string $id = null)
+    public function getQueryCacheCallback(string $method = 'get', $columns = ['*'], Key|string|null $id = null)
     {
         return function () use ($method, $columns, $id) {
             $this->avoidCache = true;
@@ -67,18 +77,22 @@ trait QueryCacheModule
      * Find a model by its primary key.
      * Overridden for Query Caching.
      *
-     * @param int|Key|string $id      the Key object or scalar ID
-     * @param array          $columns
+     * @param array $columns
+     * @param mixed $key
      *
      * @return mixed
      */
-    public function find($id, $columns = ['*'])
+    public function find($key, $columns = ['*'])
     {
-        if (!$this->shouldAvoidCache()) {
-            return $this->getFromQueryCache('find', Arr::wrap($columns), $id);
+        if (null !== $key) {
+            $key = $this->getKey($key);
         }
 
-        return $this->lookup($id, $columns);
+        if (!$this->shouldAvoidCache()) {
+            return $this->getFromQueryCache('find', Arr::wrap($columns), $key);
+        }
+
+        return $this->lookup($key, $columns);
     }
 
     /**
@@ -89,15 +103,14 @@ trait QueryCacheModule
      *
      * @return mixed
      */
-    public function recacheFindQuery(Key|string $id, array $attributes)
+    public function recacheFindQuery(Key $id, array $attributes)
     {
         if (null === $this->columns) {
             $this->columns = ['*'];
         }
 
-        $key   = $this->getCacheKey('find', $id);
-        $cache = $this->getCache();
-
+        $key      = $this->getCacheKey('find', $id);
+        $cache    = $this->getCache();
         $callback = static fn () => $attributes;
         $time     = $this->getCacheFor();
 
@@ -113,18 +126,23 @@ trait QueryCacheModule
      *
      * @param null|Key|string $id the Key object or scalar ID for find, null otherwise
      */
-    public function generatePlainCacheKey(string $method = 'get', null|Key|string $id = null, ?string $appends = null): string
+    public function generatePlainCacheKey(string $method = 'get', Key|string|null $id = null, ?string $appends = null): string
     {
         $name = $this->connection->getName();
 
         $keyIdentifierString = 'null';
         if ('find' === $method && null !== $id) {
-            // If it's a 'find' operation, ensure we have a Key object
-            $key = ($id instanceof Key) ? $id : $this->getClient()->key($this->from, $id, $this->getClientOptions());
-            // Serialize the full path for uniqueness, including ancestors.
-            $keyIdentifierString = 'key:'.json_encode($key->path());
+            $id = $this->getKey($id);
+
+            $path = Processor::normalizeKeyPath($id->path());
+
+            $keyIdentifierString = 'key:'.json_encode($path);
         }
         // If method is not 'find', $id should be null, keep 'null' string.
+
+        $normalizedAncestor = $this->ancestor instanceof Key
+            ? Processor::normalizeKeyPath($this->ancestor->path())
+            : false;
 
         // Include the serialized key path string in the cache key.
         return $name.':'.$method.':'.$keyIdentifierString.':'.serialize([
@@ -132,7 +150,8 @@ trait QueryCacheModule
             $this->offset,
             $this->limit,
             $this->keysOnly,
-            $this->ancestor instanceof Key ? json_encode($this->ancestor->path()) : false, // Serialize ancestor too
+            $normalizedAncestor,
+            $this->namespaceId,
             $this->startCursor,
             $this->distinct,
             // Note: Where clauses might contain Key objects, PHP's serialize should handle this okay

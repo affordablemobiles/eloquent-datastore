@@ -32,6 +32,8 @@ class FlushQueryCacheObserver extends ParentFlushQueryCacheObserver
 
         // Re-cache the model for a fetch($id) query, so we don't have to go back to the DB for it.
         //  this is designed for use mainly with the `array` cache driver for inside a single request.
-        $model->recacheFindQuery();
+        if ($model->exists) {
+            $model->recacheFindQuery();
+        }
     }
 }

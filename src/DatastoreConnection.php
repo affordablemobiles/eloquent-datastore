@@ -65,7 +65,7 @@ class DatastoreConnection extends Connection
      */
     public function __call($name, $arguments)
     {
-        $this->forwardCallTo($this->client, $name, $arguments);
+        return $this->forwardCallTo($this->client, $name, $arguments);
     }
 
     /**
@@ -170,6 +170,35 @@ class DatastoreConnection extends Connection
     public function disconnect(): void
     {
         $this->setClient(null);
+    }
+
+    /**
+     * Run a Datastore operation with query logging.
+     *
+     * @param string   $logQuery    the string to log for the query
+     * @param array    $logBindings the bindings to log
+     * @param \Closure $callback    the actual database operation to run
+     *
+     * @return mixed
+     */
+    public function runWithLogging(string $logQuery, array $logBindings, \Closure $callback)
+    {
+        $start = microtime(true);
+
+        try {
+            $result = $callback();
+        } catch (\Throwable $e) {
+            // Log the query even if it fails
+            $time = $this->getElapsedTime($start);
+            $this->logQuery($logQuery.' (failed)', $logBindings, $time);
+
+            throw $e;
+        }
+
+        $time = $this->getElapsedTime($start);
+        $this->logQuery($logQuery, $logBindings, $time);
+
+        return $result;
     }
 
     /**
