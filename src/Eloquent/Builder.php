@@ -242,7 +242,7 @@ class Builder extends EloquentBuilder
             return $instance;
         }
 
-        return tap($this->newModelInstance(array_merge($attributes, $values)), static function ($instance): void {
+        return tap($this->newModelInstance(array_merge($attributes, value($values))), static function ($instance): void {
             $instance->save();
         });
     }
