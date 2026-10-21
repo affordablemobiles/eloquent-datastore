@@ -355,16 +355,16 @@ trait QueriesDatastore
             return true;
         }
 
-        if (!\is_array(reset($values))) {
-            $values = [$values];
-        } else {
-            foreach ($values as $skey => &$svalue) {
-                ksort($svalue);
-            }
-        }
-
         if (!\is_array($keys)) {
             $keys = [$keys];
+            $values = [$values];
+        } elseif (!\is_array(reset($values))) {
+            $values = [$values];
+        } else {
+            foreach ($values as $skey => $svalue) {
+                ksort($svalue);
+                $values[$skey] = $svalue;
+            }
         }
 
         if (\count($keys) !== \count($values)) {

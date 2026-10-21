@@ -6,6 +6,7 @@ namespace AffordableMobiles\EloquentDatastore\Tests\Feature;
 
 use AffordableMobiles\EloquentDatastore\Pagination\Cursor;
 use AffordableMobiles\EloquentDatastore\Tests\TestCase;
+use AffordableMobiles\EloquentDatastore\Tests\TestModels\Order;
 use Google\Cloud\Datastore\Key;
 use Illuminate\Support\Facades\DB;
 
@@ -45,5 +46,22 @@ final class DriverBugsTest extends TestCase
         $missingKeyCursor = base64_encode(json_encode(['foo' => 'bar']));
         $result           = Cursor::fromEncoded($missingKeyCursor);
         self::assertNull($result);
+    }
+
+    public function testUpdatingModelWhoseFirstAttributeIsAnArray(): void
+    {
+        $order = new Order();
+        $order->forceFill([
+            'tags' => ['tag1', 'tag2'],
+            'status' => 'pending',
+        ]);
+        $order->save();
+
+        $order->status = 'completed';
+        $order->save();
+
+        $found = Order::find($order->id);
+        self::assertSame(['tag1', 'tag2'], $found->tags);
+        self::assertSame('completed', $found->status);
     }
 }
