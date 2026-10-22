@@ -37,7 +37,7 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
           apt-get update -y
           # Install both the CLI and the datastore-emulator component
-          apt-get install -y google-cloud-cli google-cloud-sdk-datastore-emulator openjdk-21-jre-headless
+          apt-get install -y google-cloud-cli google-cloud-cli-datastore-emulator openjdk-21-jre-headless
 
       - name: Install Composer Dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
